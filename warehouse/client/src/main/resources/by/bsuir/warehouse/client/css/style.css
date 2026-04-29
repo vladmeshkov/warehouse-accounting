@@ -1,0 +1,169 @@
+/* ═══════════════════════════════════════════════
+   Warehouse Accounting — JavaFX Client Stylesheet
+   ═══════════════════════════════════════════════ */
+
+/* ── Общие ───────────────────────────────────── */
+.root {
+    -fx-font-family: "Segoe UI", "Arial", sans-serif;
+    -fx-font-size: 13px;
+    -fx-background-color: #f4f6fb;
+}
+
+/* ── Текстовые поля ──────────────────────────── */
+.text-field, .password-field, .combo-box {
+    -fx-background-radius: 4;
+    -fx-border-color: #bdc3c7;
+    -fx-border-radius: 4;
+    -fx-padding: 6 10 6 10;
+}
+
+.text-field:focused, .password-field:focused {
+    -fx-border-color: #2980b9;
+}
+
+/* ── Кнопки ──────────────────────────────────── */
+.button {
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+    -fx-padding: 7 16 7 16;
+}
+
+.button-primary {
+    -fx-background-color: #2980b9;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.button-primary:hover {
+    -fx-background-color: #2471a3;
+}
+
+.button-danger {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+}
+
+.button-danger:hover {
+    -fx-background-color: #c0392b;
+}
+
+.button-success {
+    -fx-background-color: #27ae60;
+    -fx-text-fill: white;
+}
+
+.button-success:hover {
+    -fx-background-color: #229954;
+}
+
+/* ── Таблицы ─────────────────────────────────── */
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #dde3ea;
+    -fx-border-radius: 4;
+}
+
+.table-view .column-header {
+    -fx-background-color: #2c3e50;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #f9fafb;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #d6eaf8;
+    -fx-text-fill: #2c3e50;
+}
+
+/* Строка с критическим остатком — красная подсветка */
+.row-critical {
+    -fx-background-color: #fdedec !important;
+}
+
+/* Строка с предупреждением — жёлтая */
+.row-warning {
+    -fx-background-color: #fef9e7 !important;
+}
+
+/* ── Боковая навигация ───────────────────────── */
+.nav-panel {
+    -fx-background-color: #2c3e50;
+    -fx-min-width: 200px;
+}
+
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #bdc3c7;
+    -fx-font-size: 13px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 12 20 12 20;
+    -fx-max-width: Infinity;
+    -fx-background-radius: 0;
+    -fx-cursor: hand;
+}
+
+.nav-button:hover {
+    -fx-background-color: #34495e;
+    -fx-text-fill: white;
+}
+
+.nav-button-active {
+    -fx-background-color: #2980b9 !important;
+    -fx-text-fill: white !important;
+}
+
+/* ── Заголовки секций ────────────────────────── */
+.section-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+/* ── Панель инструментов ─────────────────────── */
+.toolbar {
+    -fx-background-color: white;
+    -fx-border-color: #dde3ea;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 8 12 8 12;
+    -fx-spacing: 8;
+}
+
+/* ── Карточки статистики ─────────────────────── */
+.stat-card {
+    -fx-background-color: white;
+    -fx-border-color: #dde3ea;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 16;
+}
+
+.stat-value {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2980b9;
+}
+
+.stat-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #7f8c8d;
+}
+
+/* ── Диалоги ─────────────────────────────────── */
+.dialog-pane {
+    -fx-background-color: white;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: #2c3e50;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: white;
+    -fx-font-size: 15px;
+}

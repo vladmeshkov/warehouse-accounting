@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="by.bsuir.warehouse.client.controller.InventoryFormController"
+      spacing="14" style="-fx-background-color: #f4f6fb;">
+    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+    <Label text="📋 Инвентаризация" styleClass="section-title"/>
+    <HBox spacing="16" alignment="CENTER_LEFT">
+        <VBox spacing="6">
+            <Label text="Склад*:" style="-fx-font-size:12px;"/>
+            <ComboBox fx:id="warehouseCombo" prefWidth="250" promptText="Выберите склад"
+                      onAction="#loadStockForWarehouse"/>
+        </VBox>
+        <Button text="Загрузить остатки" onAction="#loadStockForWarehouse"
+                style="-fx-background-color:#2980b9;-fx-text-fill:white;-fx-background-radius:4;
+                       -fx-cursor:hand;-fx-padding:6 14 6 14;-fx-margin:20 0 0 0;"/>
+    </HBox>
+    <Label text="Введите фактические количества:" style="-fx-font-weight:bold;"/>
+    <TableView fx:id="inventoryTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colArticle"    text="Артикул"       prefWidth="100"/>
+            <TableColumn fx:id="colProduct"    text="Наименование"  prefWidth="260"/>
+            <TableColumn fx:id="colUnit"       text="Ед.изм."       prefWidth="75"/>
+            <TableColumn fx:id="colAccounting" text="По учёту"      prefWidth="100"/>
+            <TableColumn fx:id="colActual"     text="Фактически"    prefWidth="130"/>
+            <TableColumn fx:id="colDiff"       text="Расхождение"   prefWidth="120"/>
+        </columns>
+    </TableView>
+    <HBox alignment="CENTER_RIGHT">
+        <Button text="✔ Провести инвентаризацию" onAction="#handleSubmit"
+                style="-fx-background-color:#16a085;-fx-text-fill:white;-fx-font-size:14px;
+                       -fx-pref-height:40px;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:8 24 8 24;"/>
+    </HBox>
+    <Label fx:id="statusLabel" text="" style="-fx-font-size:12px;"/>
+</VBox>

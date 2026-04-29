@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="by.bsuir.warehouse.client.controller.TransferController"
+      spacing="14" style="-fx-background-color: #f4f6fb;">
+    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+    <Label text="🔄 Внутреннее перемещение" styleClass="section-title"/>
+    <HBox spacing="16" alignment="CENTER_LEFT">
+        <VBox spacing="6">
+            <Label text="Склад отправки*:" style="-fx-font-size:12px;"/>
+            <ComboBox fx:id="fromWarehouseCombo" prefWidth="220" promptText="Откуда"/>
+        </VBox>
+        <Label text="→" style="-fx-font-size:20px;-fx-padding:16 0 0 0;"/>
+        <VBox spacing="6">
+            <Label text="Склад получения*:" style="-fx-font-size:12px;"/>
+            <ComboBox fx:id="toWarehouseCombo" prefWidth="220" promptText="Куда"/>
+        </VBox>
+    </HBox>
+    <HBox spacing="8">
+        <Button text="＋ Добавить позицию" onAction="#addItem"
+                style="-fx-background-color:#27ae60;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:5 12 5 12;"/>
+        <Button text="✕ Удалить" onAction="#removeItem"
+                style="-fx-background-color:#e74c3c;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:5 12 5 12;"/>
+    </HBox>
+    <TableView fx:id="itemsTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colArticle" text="Артикул"      prefWidth="110"/>
+            <TableColumn fx:id="colProduct" text="Наименование" prefWidth="320"/>
+            <TableColumn fx:id="colUnit"    text="Ед.изм."      prefWidth="80"/>
+            <TableColumn fx:id="colQty"     text="Количество"   prefWidth="120"/>
+        </columns>
+    </TableView>
+    <HBox alignment="CENTER_RIGHT">
+        <Button text="✔ Оформить перемещение" onAction="#handleSubmit"
+                style="-fx-background-color:#8e44ad;-fx-text-fill:white;-fx-font-size:14px;
+                       -fx-pref-height:40px;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:8 24 8 24;"/>
+    </HBox>
+    <Label fx:id="statusLabel" text="" style="-fx-font-size:12px;"/>
+</VBox>

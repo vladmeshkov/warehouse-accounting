@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="by.bsuir.warehouse.client.controller.OutcomeController"
+      spacing="14" style="-fx-background-color: #f4f6fb;">
+    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+    <Label text="📤 Расходная накладная" styleClass="section-title"/>
+    <HBox spacing="16" alignment="CENTER_LEFT">
+        <VBox spacing="6">
+            <Label text="Склад отгрузки*:" style="-fx-font-size:12px;"/>
+            <ComboBox fx:id="warehouseCombo" prefWidth="220" promptText="Выберите склад"/>
+        </VBox>
+        <VBox spacing="6">
+            <Label text="Покупатель:" style="-fx-font-size:12px;"/>
+            <ComboBox fx:id="customerCombo" prefWidth="220" promptText="Выберите покупателя"/>
+        </VBox>
+        <VBox spacing="6">
+            <Label text="Комментарий:" style="-fx-font-size:12px;"/>
+            <TextField fx:id="commentField" prefWidth="280"/>
+        </VBox>
+    </HBox>
+    <HBox spacing="8" alignment="CENTER_LEFT">
+        <Button text="＋ Добавить позицию" onAction="#addItem"
+                style="-fx-background-color:#27ae60;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:5 12 5 12;"/>
+        <Button text="✕ Удалить" onAction="#removeItem"
+                style="-fx-background-color:#e74c3c;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:5 12 5 12;"/>
+    </HBox>
+    <TableView fx:id="itemsTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colArticle" text="Артикул"      prefWidth="110"/>
+            <TableColumn fx:id="colProduct" text="Наименование" prefWidth="280"/>
+            <TableColumn fx:id="colUnit"    text="Ед.изм."      prefWidth="80"/>
+            <TableColumn fx:id="colQty"     text="Количество"   prefWidth="110"/>
+            <TableColumn fx:id="colPrice"   text="Цена"         prefWidth="110"/>
+            <TableColumn fx:id="colTotal"   text="Сумма"        prefWidth="120"/>
+        </columns>
+    </TableView>
+    <HBox alignment="CENTER_RIGHT" spacing="20">
+        <Label fx:id="totalLabel" text="Итого: 0.00 руб."
+               style="-fx-font-size:16px;-fx-font-weight:bold;-fx-text-fill:#2c3e50;"/>
+        <Button text="✔ Оформить расход" onAction="#handleSubmit"
+                style="-fx-background-color:#e74c3c;-fx-text-fill:white;-fx-font-size:14px;
+                       -fx-pref-height:40px;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:8 24 8 24;"/>
+    </HBox>
+    <Label fx:id="statusLabel" text="" style="-fx-font-size:12px;"/>
+</VBox>

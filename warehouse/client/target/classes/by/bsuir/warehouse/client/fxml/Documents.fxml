@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="by.bsuir.warehouse.client.controller.DocumentsController"
+      spacing="12" style="-fx-background-color: #f4f6fb;">
+    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+    <Label text="📄 Журнал документов" styleClass="section-title"/>
+    <HBox styleClass="toolbar" spacing="10" alignment="CENTER_LEFT">
+        <Label text="Тип:"/>
+        <ComboBox fx:id="typeFilter" prefWidth="180" onAction="#applyFilter"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Обновить" onAction="#loadData"
+                style="-fx-background-color:#2980b9;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 12 6 12;"/>
+    </HBox>
+    <TableView fx:id="docsTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colId"          text="ID"          prefWidth="55"/>
+            <TableColumn fx:id="colNumber"      text="Номер"       prefWidth="180"/>
+            <TableColumn fx:id="colType"        text="Тип"         prefWidth="160"/>
+            <TableColumn fx:id="colDate"        text="Дата"        prefWidth="140"/>
+            <TableColumn fx:id="colWarehouse"   text="Склад"       prefWidth="160"/>
+            <TableColumn fx:id="colCounterpart" text="Контрагент"  prefWidth="180"/>
+            <TableColumn fx:id="colUser"        text="Оформил"     prefWidth="150"/>
+        </columns>
+        <placeholder><Label text="Нет документов"/></placeholder>
+    </TableView>
+    <Label fx:id="statusLabel" text="" style="-fx-text-fill:#7f8c8d;-fx-font-size:11px;"/>
+</VBox>

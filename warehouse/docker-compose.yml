@@ -1,0 +1,60 @@
+version: '3.8'
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Warehouse Accounting System — Docker Compose
+#  Запуск: docker compose up -d
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── MySQL 8.0 ─────────────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: warehouse-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE:      warehouse_accounting
+      MYSQL_USER:          warehouse_user
+      MYSQL_PASSWORD:      warehouse_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+      - ./sql/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost",
+             "-u", "warehouse_user", "-pwarehouse_pass"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ── Warehouse Server ───────────────────────────────────────────────────────
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: warehouse-server
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8888:8888"
+    environment:
+      DB_URL:      "jdbc:mysql://mysql:3306/warehouse_accounting?useSSL=false&serverTimezone=Europe/Minsk&allowPublicKeyRetrieval=true&characterEncoding=UTF-8"
+      DB_USERNAME: warehouse_user
+      DB_PASSWORD: warehouse_pass
+      SERVER_PORT: 8888
+    volumes:
+      - server_logs:/app/logs
+
+volumes:
+  mysql_data:
+  server_logs:

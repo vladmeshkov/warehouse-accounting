@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="by.bsuir.warehouse.client.controller.ForecastController"
+      spacing="12" style="-fx-background-color: #f4f6fb;">
+    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <Label text="🔮 Прогнозирование дефицита" styleClass="section-title"/>
+        <Label text="(метод экспоненциального сглаживания, α=0.3)"
+               style="-fx-text-fill:#7f8c8d; -fx-font-size:12px;"/>
+    </HBox>
+
+    <!-- Легенда -->
+    <HBox spacing="20" alignment="CENTER_LEFT">
+        <HBox spacing="6" alignment="CENTER_LEFT">
+            <Label text="  " style="-fx-background-color:#fdedec; -fx-border-color:#e74c3c;"/>
+            <Label text="Дефицит уже наступил" style="-fx-font-size:11px;"/>
+        </HBox>
+        <HBox spacing="6" alignment="CENTER_LEFT">
+            <Label text="  " style="-fx-background-color:#fef9e7; -fx-border-color:#f39c12;"/>
+            <Label text="Дефицит ≤ 7 дней" style="-fx-font-size:11px;"/>
+        </HBox>
+    </HBox>
+
+    <!-- Панель инструментов -->
+    <HBox styleClass="toolbar" spacing="10" alignment="CENTER_LEFT">
+        <Label text="Склад:"/>
+        <ComboBox fx:id="warehouseFilter" promptText="Все склады" prefWidth="200"
+                  onAction="#applyFilter"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="🔄 Пересчитать прогнозы" onAction="#handleRecalculate"
+                style="-fx-background-color:#8e44ad;-fx-text-fill:white;
+                       -fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 14 6 14;"/>
+        <Button text="Обновить" onAction="#loadData"
+                style="-fx-background-color:#2980b9;-fx-text-fill:white;
+                       -fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 12 6 12;"/>
+    </HBox>
+
+    <!-- Таблица прогнозов -->
+    <TableView fx:id="forecastTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colWarehouse"    text="Склад"             prefWidth="150"/>
+            <TableColumn fx:id="colArticle"      text="Артикул"           prefWidth="95"/>
+            <TableColumn fx:id="colProduct"      text="Наименование"      prefWidth="220"/>
+            <TableColumn fx:id="colStock"        text="Остаток"           prefWidth="80"/>
+            <TableColumn fx:id="colMin"          text="Минимум"           prefWidth="80"/>
+            <TableColumn fx:id="colConsumption"  text="Расход/день"       prefWidth="100"/>
+            <TableColumn fx:id="colDays"         text="Дней до дефицита"  prefWidth="140"/>
+            <TableColumn fx:id="colDeficitDate"  text="Дата дефицита"     prefWidth="120"/>
+            <TableColumn fx:id="colCalculated"   text="Рассчитано"        prefWidth="130"/>
+        </columns>
+        <placeholder><Label text="Нет данных о прогнозах. Нажмите «Обновить»"/></placeholder>
+    </TableView>
+
+    <Label fx:id="statusLabel" text="" style="-fx-text-fill:#7f8c8d; -fx-font-size:11px;"/>
+</VBox>

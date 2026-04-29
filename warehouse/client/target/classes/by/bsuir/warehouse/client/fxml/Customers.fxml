@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="by.bsuir.warehouse.client.controller.CustomersController"
+      spacing="12" style="-fx-background-color: #f4f6fb;">
+    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+    <Label text="👥 Покупатели" styleClass="section-title"/>
+    <HBox styleClass="toolbar" spacing="8" alignment="CENTER_LEFT">
+        <Button text="＋ Добавить" onAction="#handleAdd"
+                style="-fx-background-color:#27ae60;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 14 6 14;"/>
+        <Button text="✏ Изменить" onAction="#handleEdit"
+                style="-fx-background-color:#f39c12;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 14 6 14;"/>
+        <Button text="🗑 Удалить" onAction="#handleDelete"
+                style="-fx-background-color:#e74c3c;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 14 6 14;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Обновить" onAction="#loadData"
+                style="-fx-background-color:#2980b9;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 12 6 12;"/>
+    </HBox>
+    <TableView fx:id="customersTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colId"      text="ID"           prefWidth="55"/>
+            <TableColumn fx:id="colName"    text="Наименование" prefWidth="240"/>
+            <TableColumn fx:id="colContact" text="Контактное лицо" prefWidth="180"/>
+            <TableColumn fx:id="colPhone"   text="Телефон"      prefWidth="130"/>
+            <TableColumn fx:id="colEmail"   text="Email"        prefWidth="200"/>
+        </columns>
+    </TableView>
+    <Label fx:id="statusLabel" text="" style="-fx-text-fill:#7f8c8d;-fx-font-size:11px;"/>
+</VBox>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="by.bsuir.warehouse.client.controller.StockController"
+      spacing="12" style="-fx-background-color: #f4f6fb;">
+    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+
+    <Label text="Остатки товаров" styleClass="section-title"/>
+
+    <!-- Фильтры -->
+    <HBox styleClass="toolbar" spacing="10" alignment="CENTER_LEFT">
+        <Label text="Склад:"/>
+        <ComboBox fx:id="warehouseFilter" promptText="Все склады" prefWidth="200"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <CheckBox fx:id="showOnlyLow" text="Только критические остатки"
+                  onAction="#applyFilter"/>
+        <Button text="Обновить" onAction="#loadData"
+                style="-fx-background-color:#2980b9;-fx-text-fill:white;
+                       -fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 12 6 12;"/>
+    </HBox>
+
+    <TableView fx:id="stockTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colWarehouse" text="Склад"         prefWidth="160"/>
+            <TableColumn fx:id="colArticle"   text="Артикул"       prefWidth="100"/>
+            <TableColumn fx:id="colProduct"   text="Наименование"  prefWidth="260"/>
+            <TableColumn fx:id="colUnit"      text="Ед.изм."       prefWidth="75"/>
+            <TableColumn fx:id="colQty"       text="Остаток"       prefWidth="90"/>
+            <TableColumn fx:id="colMin"       text="Минимум"       prefWidth="90"/>
+            <TableColumn fx:id="colStatus"    text="Статус"        prefWidth="110"/>
+        </columns>
+        <placeholder><Label text="Нет данных"/></placeholder>
+    </TableView>
+
+    <Label fx:id="statusLabel" text="" style="-fx-text-fill:#7f8c8d; -fx-font-size:11px;"/>
+</VBox>

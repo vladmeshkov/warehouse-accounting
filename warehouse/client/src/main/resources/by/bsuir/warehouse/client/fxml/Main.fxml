@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="by.bsuir.warehouse.client.controller.MainController"
+            prefWidth="1100" prefHeight="700">
+
+    <!-- ══ Левая панель навигации ══ -->
+    <left>
+        <VBox styleClass="nav-panel" prefWidth="210" spacing="2">
+            <padding><Insets top="20" bottom="20"/></padding>
+
+            <!-- Логотип / название -->
+            <Label text="📦 Склад" style="-fx-text-fill: white; -fx-font-size: 18px;
+                   -fx-font-weight: bold; -fx-padding: 0 20 16 20;"/>
+
+            <!-- Пользователь -->
+            <Label fx:id="userInfoLabel" text=""
+                   style="-fx-text-fill: #95a5a6; -fx-font-size: 11px;
+                          -fx-padding: 0 20 12 20;" wrapText="true"/>
+
+            <Separator style="-fx-background-color: #34495e;"/>
+
+            <!-- Навигационные кнопки -->
+            <Button fx:id="btnDashboard"  text="🏠  Главная"
+                    styleClass="nav-button" onAction="#showDashboard"  maxWidth="Infinity"/>
+            <Button fx:id="btnStock"      text="📊  Остатки"
+                    styleClass="nav-button" onAction="#showStock"      maxWidth="Infinity"/>
+            <Button fx:id="btnProducts"   text="🏷  Товары"
+                    styleClass="nav-button" onAction="#showProducts"   maxWidth="Infinity"/>
+            <Button fx:id="btnWarehouses" text="🏭  Склады"
+                    styleClass="nav-button" onAction="#showWarehouses" maxWidth="Infinity"/>
+            <Button fx:id="btnIncome"     text="📥  Приход"
+                    styleClass="nav-button" onAction="#showIncome"     maxWidth="Infinity"/>
+            <Button fx:id="btnOutcome"    text="📤  Расход"
+                    styleClass="nav-button" onAction="#showOutcome"    maxWidth="Infinity"/>
+            <Button fx:id="btnTransfer"   text="🔄  Перемещение"
+                    styleClass="nav-button" onAction="#showTransfer"   maxWidth="Infinity"/>
+            <Button fx:id="btnInventory"  text="📋  Инвентаризация"
+                    styleClass="nav-button" onAction="#showInventory"  maxWidth="Infinity"/>
+            <Button fx:id="btnDocuments"  text="📄  Документы"
+                    styleClass="nav-button" onAction="#showDocuments"  maxWidth="Infinity"/>
+            <Button fx:id="btnForecast"   text="🔮  Прогноз дефицита"
+                    styleClass="nav-button" onAction="#showForecast"   maxWidth="Infinity"/>
+            <Button fx:id="btnSuppliers"  text="🚚  Поставщики"
+                    styleClass="nav-button" onAction="#showSuppliers"  maxWidth="Infinity"/>
+            <Button fx:id="btnCustomers"  text="👥  Покупатели"
+                    styleClass="nav-button" onAction="#showCustomers"  maxWidth="Infinity"/>
+            <Button fx:id="btnUsers"      text="👤  Пользователи"
+                    styleClass="nav-button" onAction="#showUsers"      maxWidth="Infinity"/>
+
+            <!-- Спейсер -->
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <Separator style="-fx-background-color: #34495e;"/>
+            <Button text="🚪  Выйти" styleClass="nav-button"
+                    onAction="#handleLogout" maxWidth="Infinity"
+                    style="-fx-text-fill: #e74c3c;"/>
+        </VBox>
+    </left>
+
+    <!-- ══ Центральная область контента ══ -->
+    <center>
+        <StackPane fx:id="contentPane" style="-fx-background-color: #f4f6fb;">
+            <!-- Контент загружается динамически через MainController -->
+        </StackPane>
+    </center>
+
+</BorderPane>
