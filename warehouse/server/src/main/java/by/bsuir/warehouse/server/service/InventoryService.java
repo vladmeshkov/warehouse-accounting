@@ -41,13 +41,6 @@ public class InventoryService {
 
     /**
      * Оформляет поступление товаров на склад от поставщика.
-     * Алгоритм соответствует схеме на рисунке 3.4 пояснительной записки.
-     *
-     * @param warehouseTo  склад назначения
-     * @param supplier     поставщик
-     * @param items        список позиций {товар, количество, цена}
-     * @param responsible  пользователь, оформляющий документ
-     * @return             созданный документ с присвоенным ID
      */
     public Document processIncomeDocument(Warehouse warehouseTo, Supplier supplier,
                                           List<DocumentItem> items, User responsible) {
@@ -68,14 +61,13 @@ public class InventoryService {
             for (DocumentItem item : items) {
                 int qty = item.getQuantity().intValue();
                 stockDAO.increaseStock(conn, warehouseTo.getId(),
-                                       item.getProduct().getId(), qty);
+                        item.getProduct().getId(), qty);
             }
 
             conn.commit();
             log.info("Приход оформлен: " + doc.getDocumentNumber()
-                     + ", склад=" + warehouseTo.getName());
+                    + ", склад=" + warehouseTo.getName());
 
-            // Обновляем историю потребления (не влияет на транзакцию)
             updateConsumptionForIncome(items);
             return doc;
 
@@ -91,7 +83,6 @@ public class InventoryService {
 
     /**
      * Оформляет отгрузку товаров со склада покупателю.
-     * Проверяет достаточность остатков перед списанием.
      */
     public Document processOutcomeDocument(Warehouse warehouseFrom, Customer customer,
                                            List<DocumentItem> items, User responsible) {
@@ -111,14 +102,13 @@ public class InventoryService {
 
             for (DocumentItem item : items) {
                 int qty = item.getQuantity().intValue();
-                // decreaseStock бросает исключение если недостаточно товара
                 stockDAO.decreaseStock(conn, warehouseFrom.getId(),
-                                       item.getProduct().getId(), qty);
+                        item.getProduct().getId(), qty);
             }
 
             conn.commit();
             log.info("Расход оформлен: " + doc.getDocumentNumber()
-                     + ", склад=" + warehouseFrom.getName());
+                    + ", склад=" + warehouseFrom.getName());
 
             // Обновляем историю потребления для прогнозирования
             for (DocumentItem item : items) {
@@ -164,9 +154,9 @@ public class InventoryService {
             for (DocumentItem item : items) {
                 int qty = item.getQuantity().intValue();
                 stockDAO.decreaseStock(conn, warehouseFrom.getId(),
-                                       item.getProduct().getId(), qty);
+                        item.getProduct().getId(), qty);
                 stockDAO.increaseStock(conn, warehouseTo.getId(),
-                                       item.getProduct().getId(), qty);
+                        item.getProduct().getId(), qty);
             }
 
             conn.commit();
@@ -185,12 +175,7 @@ public class InventoryService {
 
     /**
      * Обрабатывает результаты инвентаризации.
-     * Алгоритм соответствует схеме на рисунке 3.6 пояснительной записки.
-     *
-     * @param warehouse       проверяемый склад
-     * @param actualQuantities карта {productId → фактическое количество}
-     * @param responsible      пользователь, проводящий инвентаризацию
-     * @return InventoryResult с актом расхождений
+     * Возвращает общий InventoryResult из common.
      */
     public InventoryResult processInventory(Warehouse warehouse,
                                             Map<Integer, Integer> actualQuantities,
@@ -216,10 +201,11 @@ public class InventoryService {
             int accounting = accountingQty.getOrDefault(productId, 0);
             int diff = actual - accounting;
 
+            DiscrepancyEntry e = new DiscrepancyEntry(productId, accounting, actual, diff);
             if (diff > 0) {
-                surpluses.add(new DiscrepancyEntry(productId, accounting, actual, diff));
+                surpluses.add(e);
             } else if (diff < 0) {
-                shortages.add(new DiscrepancyEntry(productId, accounting, actual, diff));
+                shortages.add(e);
             }
         }
 
@@ -246,16 +232,16 @@ public class InventoryService {
 
             // Корректируем остатки
             for (DiscrepancyEntry e : surpluses) {
-                stockDAO.setStock(conn, warehouse.getId(), e.productId, e.actual);
+                stockDAO.setStock(conn, warehouse.getId(), e.getProductId(), e.getActual());
             }
             for (DiscrepancyEntry e : shortages) {
-                stockDAO.setStock(conn, warehouse.getId(), e.productId, e.actual);
+                stockDAO.setStock(conn, warehouse.getId(), e.getProductId(), e.getActual());
             }
 
             conn.commit();
             int totalDiscrepancies = surpluses.size() + shortages.size();
             log.info("Инвентаризация проведена: " + doc.getDocumentNumber()
-                     + ", расхождений=" + totalDiscrepancies);
+                    + ", расхождений=" + totalDiscrepancies);
 
             return new InventoryResult(doc, surpluses, shortages,
                     actualQuantities.size(), totalDiscrepancies);
@@ -282,7 +268,7 @@ public class InventoryService {
                     || item.getQuantity().compareTo(BigDecimal.ZERO) <= 0)
                 throw new IllegalArgumentException(
                         "Количество должно быть положительным: "
-                        + (item.getProduct() != null ? item.getProduct().getName() : ""));
+                                + (item.getProduct() != null ? item.getProduct().getName() : ""));
         }
     }
 
@@ -298,9 +284,9 @@ public class InventoryService {
     private DocumentItem toItem(DiscrepancyEntry e) {
         DocumentItem item = new DocumentItem();
         Product p = new Product();
-        p.setId(e.productId);
+        p.setId(e.getProductId());
         item.setProduct(p);
-        item.setQuantity(BigDecimal.valueOf(Math.abs(e.diff)));
+        item.setQuantity(BigDecimal.valueOf(Math.abs(e.getDiff())));
         return item;
     }
 
@@ -318,48 +304,5 @@ public class InventoryService {
         catch (SQLException ex) { log.warning("Reset autocommit failed: " + ex.getMessage()); }
     }
 
-    // ── Вложенные классы результатов ──────────────────────────────────────
-
-    /** Позиция расхождения при инвентаризации */
-    public static class DiscrepancyEntry implements java.io.Serializable {
-        public final int productId;
-        public final int accounting; // учётный остаток
-        public final int actual;     // фактический остаток
-        public final int diff;       // разница (+ излишек, - недостача)
-        // Заполняется контроллером из Product
-        public String productName;
-        public String productArticle;
-
-        public DiscrepancyEntry(int productId, int accounting, int actual, int diff) {
-            this.productId  = productId;
-            this.accounting = accounting;
-            this.actual     = actual;
-            this.diff       = diff;
-        }
-
-        public boolean isSurplus()  { return diff > 0; }
-        public boolean isShortage() { return diff < 0; }
-    }
-
-    /** Результат инвентаризации */
-    public static class InventoryResult implements java.io.Serializable {
-        public final Document document;
-        public final List<DiscrepancyEntry> surpluses;
-        public final List<DiscrepancyEntry> shortages;
-        public final int totalChecked;
-        public final int totalDiscrepancies;
-
-        public InventoryResult(Document document,
-                               List<DiscrepancyEntry> surpluses,
-                               List<DiscrepancyEntry> shortages,
-                               int totalChecked, int totalDiscrepancies) {
-            this.document           = document;
-            this.surpluses          = surpluses;
-            this.shortages          = shortages;
-            this.totalChecked       = totalChecked;
-            this.totalDiscrepancies = totalDiscrepancies;
-        }
-
-        public boolean hasDiscrepancies() { return totalDiscrepancies > 0; }
-    }
+    // Внутренние классы DiscrepancyEntry и InventoryResult удалены – используем общие из common.model
 }

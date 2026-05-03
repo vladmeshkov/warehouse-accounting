@@ -34,6 +34,7 @@ public class WarehousesController {
         colName   .setCellValueFactory(new PropertyValueFactory<>("name"));
         colAddress.setCellValueFactory(new PropertyValueFactory<>("address"));
         warehousesTable.setItems(warehouses);
+        warehousesTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         loadData();
     }
 

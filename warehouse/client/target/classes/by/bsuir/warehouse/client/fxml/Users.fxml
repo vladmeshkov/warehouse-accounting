@@ -6,14 +6,18 @@
       fx:controller="by.bsuir.warehouse.client.controller.UsersController"
       spacing="12" style="-fx-background-color: #f4f6fb;">
     <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
-    <Label text="👤 Управление пользователями" styleClass="section-title"/>
+    <Label text="👤 Пользователи" styleClass="section-title"/>
     <HBox styleClass="toolbar" spacing="8" alignment="CENTER_LEFT">
         <Button text="＋ Добавить" onAction="#handleAdd"
                 style="-fx-background-color:#27ae60;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 14 6 14;"/>
         <Button text="✏ Изменить" onAction="#handleEdit"
                 style="-fx-background-color:#f39c12;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 14 6 14;"/>
-        <Button text="🚫 Блокировать" onAction="#handleDeactivate"
+        <Button text="⛔ Заблокировать" onAction="#handleBlock"
                 style="-fx-background-color:#7f8c8d;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 14 6 14;"/>
+        <Button text="✅ Разблокировать" onAction="#handleUnblock"
+                style="-fx-background-color:#f39c12;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 14 6 14;"/>
+        <Button text="🗑 Удалить" onAction="#handleDelete"
+                style="-fx-background-color:#e74c3c;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 14 6 14;"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button text="Обновить" onAction="#loadData"
                 style="-fx-background-color:#2980b9;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 12 6 12;"/>

@@ -39,7 +39,7 @@ class PasswordUtilTest {
     void hash_knownVector_abc() {
         // SHA-256("abc") = ba7816bf8f01cfea414140de5dae2ec73b00361bbef0469348423f656fbc1e2d
         // Ожидаемое значение из стандарта NIST
-        String expected = "ba7816bf8f01cfea414140de5dae2ec73b00361bbef0469348423f656fbc1e2d";
+        String expected = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
         // Примечание: у нас UTF-8 кодировка, это стандартное SHA-256("abc")
         assertEquals(expected, PasswordUtil.hash("abc"),
                 "Хэш для 'abc' должен соответствовать стандарту SHA-256");

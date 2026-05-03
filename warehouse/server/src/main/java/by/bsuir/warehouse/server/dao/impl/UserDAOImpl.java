@@ -1,5 +1,6 @@
 package by.bsuir.warehouse.server.dao.impl;
 
+import by.bsuir.warehouse.common.model.RegistrationStatus;
 import by.bsuir.warehouse.common.model.Role;
 import by.bsuir.warehouse.common.model.User;
 import by.bsuir.warehouse.server.config.DBConnection;
@@ -24,10 +25,11 @@ public class UserDAOImpl implements UserDAO {
     public List<User> findAll() {
         List<User> list = new ArrayList<>();
         String sql = "SELECT u.user_id, u.username, u.password_hash, u.full_name, " +
-                     "u.phone, u.email, u.created_at, u.is_active, " +
-                     "r.role_id, r.role_name " +
-                     "FROM user u JOIN role r ON u.role_id = r.role_id " +
-                     "ORDER BY u.full_name";
+                "u.phone, u.email, u.created_at, u.is_active, u.registration_status, " +
+                "r.role_id, r.role_name " +
+                "FROM user u JOIN role r ON u.role_id = r.role_id " +
+                "WHERE u.registration_status = 'APPROVED' " +
+                "ORDER BY u.full_name";
         try (PreparedStatement ps = conn().prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) list.add(map(rs));
@@ -40,10 +42,10 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public Optional<User> findById(int id) {
         String sql = "SELECT u.user_id, u.username, u.password_hash, u.full_name, " +
-                     "u.phone, u.email, u.created_at, u.is_active, " +
-                     "r.role_id, r.role_name " +
-                     "FROM user u JOIN role r ON u.role_id = r.role_id " +
-                     "WHERE u.user_id = ?";
+                "u.phone, u.email, u.created_at, u.is_active, u.registration_status, " +
+                "r.role_id, r.role_name " +
+                "FROM user u JOIN role r ON u.role_id = r.role_id " +
+                "WHERE u.user_id = ?";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -58,10 +60,10 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public Optional<User> findByUsername(String username) {
         String sql = "SELECT u.user_id, u.username, u.password_hash, u.full_name, " +
-                     "u.phone, u.email, u.created_at, u.is_active, " +
-                     "r.role_id, r.role_name " +
-                     "FROM user u JOIN role r ON u.role_id = r.role_id " +
-                     "WHERE u.username = ?";
+                "u.phone, u.email, u.created_at, u.is_active, u.registration_status, " +
+                "r.role_id, r.role_name " +
+                "FROM user u JOIN role r ON u.role_id = r.role_id " +
+                "WHERE u.username = ?";
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
@@ -91,7 +93,7 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public int create(User u) {
         String sql = "INSERT INTO user (username, password_hash, role_id, full_name, " +
-                     "phone, email, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                "phone, email, is_active, registration_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = conn().prepareStatement(
                 sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, u.getUsername());
@@ -101,6 +103,7 @@ public class UserDAOImpl implements UserDAO {
             ps.setString(5, u.getPhone());
             ps.setString(6, u.getEmail());
             ps.setBoolean(7, u.isActive());
+            ps.setString(8, u.getRegistrationStatus() != null ? u.getRegistrationStatus().name() : RegistrationStatus.APPROVED.name());
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) return keys.getInt(1);
@@ -112,16 +115,49 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
+    public int register(User u) {
+        String sql = "INSERT INTO user (username, password_hash, role_id, full_name, " +
+                "phone, email, is_active, registration_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = conn().prepareStatement(
+                sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, u.getUsername());
+            ps.setString(2, u.getPasswordHash());
+            ps.setInt(3, u.getRole().getId());
+            ps.setString(4, u.getFullName());
+            ps.setString(5, u.getPhone());
+            ps.setString(6, u.getEmail());
+            ps.setBoolean(7, false);
+            ps.setString(8, RegistrationStatus.PENDING.name());
+            ps.executeUpdate();
+            try (ResultSet keys = ps.getGeneratedKeys()) {
+                if (keys.next()) return keys.getInt(1);
+            }
+        } catch (SQLException e) {
+            log.severe("register user: " + e.getMessage());
+        }
+        return -1;
+    }
+
+    @Override
     public boolean update(User u) {
-        String sql = "UPDATE user SET username=?, role_id=?, full_name=?, " +
-                     "phone=?, email=? WHERE user_id=?";
+        String sql;
+        if (u.getPasswordHash() != null && !u.getPasswordHash().isEmpty()) {
+            sql = "UPDATE user SET username=?, role_id=?, full_name=?, phone=?, email=?, password_hash=? WHERE user_id=?";
+        } else {
+            sql = "UPDATE user SET username=?, role_id=?, full_name=?, phone=?, email=? WHERE user_id=?";
+        }
         try (PreparedStatement ps = conn().prepareStatement(sql)) {
             ps.setString(1, u.getUsername());
             ps.setInt(2, u.getRole().getId());
             ps.setString(3, u.getFullName());
             ps.setString(4, u.getPhone());
             ps.setString(5, u.getEmail());
-            ps.setInt(6, u.getId());
+            if (u.getPasswordHash() != null && !u.getPasswordHash().isEmpty()) {
+                ps.setString(6, u.getPasswordHash());
+                ps.setInt(7, u.getId());
+            } else {
+                ps.setInt(6, u.getId());
+            }
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             log.severe("update user: " + e.getMessage());
@@ -142,6 +178,50 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
+    @Override
+    public List<User> findPendingUsers() {
+        List<User> list = new ArrayList<>();
+        String sql = "SELECT u.user_id, u.username, u.password_hash, u.full_name, " +
+                "u.phone, u.email, u.created_at, u.is_active, u.registration_status, " +
+                "r.role_id, r.role_name " +
+                "FROM user u JOIN role r ON u.role_id = r.role_id " +
+                "WHERE u.registration_status = 'PENDING' " +
+                "ORDER BY u.full_name";
+        try (PreparedStatement ps = conn().prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) list.add(map(rs));
+        } catch (SQLException e) {
+            log.severe("findPendingUsers: " + e.getMessage());
+        }
+        return list;
+    }
+
+    @Override
+    public boolean setRegistrationStatus(int userId, RegistrationStatus status) {
+        try (PreparedStatement ps = conn().prepareStatement(
+                "UPDATE user SET registration_status=?, is_active=? WHERE user_id=?")) {
+            ps.setString(1, status.name());
+            ps.setBoolean(2, status == RegistrationStatus.APPROVED);
+            ps.setInt(3, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            log.severe("setRegistrationStatus: " + e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean delete(int userId) {
+        try (PreparedStatement ps = conn().prepareStatement(
+                "DELETE FROM user WHERE user_id=?")) {
+            ps.setInt(1, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            log.severe("delete user: " + e.getMessage());
+            return false;
+        }
+    }
+
     private User map(ResultSet rs) throws SQLException {
         Role role = new Role(rs.getInt("role_id"), rs.getString("role_name"));
         User u = new User();
@@ -155,6 +235,10 @@ public class UserDAOImpl implements UserDAO {
         Timestamp ts = rs.getTimestamp("created_at");
         if (ts != null) u.setCreatedAt(ts.toLocalDateTime());
         u.setActive(rs.getBoolean("is_active"));
+        String regStatus = rs.getString("registration_status");
+        if (regStatus != null) {
+            u.setRegistrationStatus(RegistrationStatus.valueOf(regStatus));
+        }
         return u;
     }
 }

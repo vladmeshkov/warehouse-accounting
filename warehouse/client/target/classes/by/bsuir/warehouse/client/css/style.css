@@ -72,23 +72,49 @@
     -fx-font-weight: bold;
 }
 
+/* Строки */
+.table-row-cell {
+    -fx-text-fill: #2c3e50;
+}
+
 .table-row-cell:odd {
     -fx-background-color: #f9fafb;
 }
 
+/* Выделенная строка */
 .table-row-cell:selected {
     -fx-background-color: #d6eaf8;
     -fx-text-fill: #2c3e50;
+    -fx-table-cell-border-color: transparent;
 }
 
-/* Строка с критическим остатком — красная подсветка */
+/* Наведение на выделенную строку */
+.table-row-cell:selected:hover {
+    -fx-background-color: #aed6f1;
+    -fx-text-fill: #2c3e50;
+}
+
+/* Наведение на обычную строку */
+.table-row-cell:hover {
+    -fx-background-color: #ebf5fb;
+    -fx-text-fill: #2c3e50;
+}
+
+/* Подсветка критических остатков */
 .row-critical {
     -fx-background-color: #fdedec !important;
 }
+.row-critical:selected {
+    -fx-background-color: #f5b7b1 !important;
+    -fx-text-fill: #2c3e50 !important;
+}
 
-/* Строка с предупреждением — жёлтая */
 .row-warning {
     -fx-background-color: #fef9e7 !important;
+}
+.row-warning:selected {
+    -fx-background-color: #f9e79f !important;
+    -fx-text-fill: #2c3e50 !important;
 }
 
 /* ── Боковая навигация ───────────────────────── */

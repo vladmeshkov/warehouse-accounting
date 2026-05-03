@@ -35,10 +35,13 @@ public class OutcomeController {
     private final ObservableList<DocumentItem> items = FXCollections.observableArrayList();
     private List<Product> allProducts = new ArrayList<>();
 
-    @FXML public void initialize() {
-        setupColumns(); itemsTable.setItems(items); loadReferenceData();
+    @FXML
+    public void initialize() {
+        setupColumns();
+        itemsTable.setItems(items);
+        itemsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        loadReferenceData();
     }
-
     private void setupColumns() {
         colArticle.setCellValueFactory(c -> new SimpleStringProperty(
                 c.getValue().getProduct() != null ? c.getValue().getProduct().getArticle() : ""));

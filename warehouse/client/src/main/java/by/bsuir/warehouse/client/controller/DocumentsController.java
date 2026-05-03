@@ -40,6 +40,7 @@ public class DocumentsController {
         setupColumns();
         filtered = new FilteredList<>(allDocs, d -> true);
         docsTable.setItems(filtered);
+        docsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         typeFilter.getItems().add("Все типы");
         for (DocumentType dt : DocumentType.values())
@@ -48,7 +49,6 @@ public class DocumentsController {
 
         loadData();
     }
-
     private void setupColumns() {
         colId    .setCellValueFactory(new PropertyValueFactory<>("id"));
         colNumber.setCellValueFactory(new PropertyValueFactory<>("documentNumber"));

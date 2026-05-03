@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.shape.Circle?>
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="by.bsuir.warehouse.client.controller.ProfileController"
+      spacing="24" style="-fx-background-color: #f4f6fb;">
+    <padding><Insets top="28" right="36" bottom="28" left="36"/></padding>
+
+    <!-- Заголовок -->
+    <Label text="Личный кабинет" styleClass="section-title"/>
+
+    <!-- Верхняя карточка профиля -->
+    <HBox spacing="28" style="-fx-background-color: white; -fx-padding: 28; -fx-background-radius: 12;
+           -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 4);">
+        <!-- Аватар (круг с инициалами) -->
+        <StackPane prefWidth="96" prefHeight="96">
+            <Circle radius="48" fill="#2980b9"/>
+            <Label fx:id="avatarLabel" text="А" textFill="white"
+                   style="-fx-font-size: 32px; -fx-font-weight: bold;"/>
+        </StackPane>
+
+        <!-- Основная информация -->
+        <VBox spacing="12" HBox.hgrow="ALWAYS">
+            <Label fx:id="fullNameLabel" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+            <HBox spacing="20">
+                <VBox spacing="4">
+                    <Label text="Роль" style="-fx-font-size: 12px; -fx-text-fill: #95a5a6;"/>
+                    <Label fx:id="roleLabel" style="-fx-font-size: 15px; -fx-text-fill: #7f8c8d;"/>
+                </VBox>
+                <VBox spacing="4">
+                    <Label text="Логин" style="-fx-font-size: 12px; -fx-text-fill: #95a5a6;"/>
+                    <Label fx:id="usernameLabel" style="-fx-font-size: 15px; -fx-text-fill: #7f8c8d;"/>
+                </VBox>
+            </HBox>
+
+            <!-- Кнопки -->
+            <HBox spacing="10">
+                <Button fx:id="editButton" text="✏ Редактировать" onAction="#handleEdit"
+                        style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-background-radius: 6;
+                               -fx-cursor: hand; -fx-padding: 8 16 8 16;"/>
+                <Button fx:id="saveButton" text="💾 Сохранить" onAction="#handleSave"
+                        style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 6;
+                               -fx-cursor: hand; -fx-padding: 8 16 8 16;"/>
+                <Button fx:id="changePasswordButton" text="🔑 Сменить пароль" onAction="#handleChangePassword"
+                        style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-background-radius: 6;
+                               -fx-cursor: hand; -fx-padding: 8 16 8 16;"/>
+            </HBox>
+        </VBox>
+    </HBox>
+
+    <!-- Редактируемая информация -->
+    <VBox spacing="16" style="-fx-background-color: white; -fx-padding: 24; -fx-background-radius: 12;
+           -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 4);">
+        <Label text="Контактные данные" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+        <GridPane hgap="24" vgap="14">
+            <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                <Label text="ФИО"/>
+                <TextField fx:id="fullNameField" promptText="Введите ФИО" prefWidth="320"/>
+            </VBox>
+            <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                <Label text="Телефон"/>
+                <TextField fx:id="phoneField" promptText="+375 (__) ___-__-__" prefWidth="240"/>
+            </VBox>
+            <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.columnSpan="2">
+                <Label text="Email"/>
+                <TextField fx:id="emailField" promptText="example@mail.ru" prefWidth="440"/>
+            </VBox>
+        </GridPane>
+    </VBox>
+
+    <!-- Моя статистика -->
+    <VBox spacing="16">
+        <Label text="Моя статистика" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+        <HBox spacing="16" alignment="CENTER">
+            <!-- Карточка Приходы -->
+            <VBox styleClass="stat-card" prefWidth="160" alignment="CENTER" spacing="8"
+                  style="-fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0, 0, 2);">
+                <Label text="📥" style="-fx-font-size: 28px;"/>
+                <Label text="Приходы" styleClass="stat-label"/>
+                <Label fx:id="statIncome" text="0" styleClass="stat-value" style="-fx-text-fill: #27ae60;"/>
+            </VBox>
+            <!-- Карточка Расходы -->
+            <VBox styleClass="stat-card" prefWidth="160" alignment="CENTER" spacing="8"
+                  style="-fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0, 0, 2);">
+                <Label text="📤" style="-fx-font-size: 28px;"/>
+                <Label text="Расходы" styleClass="stat-label"/>
+                <Label fx:id="statOutcome" text="0" styleClass="stat-value" style="-fx-text-fill: #e74c3c;"/>
+            </VBox>
+            <!-- Карточка Перемещения -->
+            <VBox styleClass="stat-card" prefWidth="160" alignment="CENTER" spacing="8"
+                  style="-fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0, 0, 2);">
+                <Label text="🔄" style="-fx-font-size: 28px;"/>
+                <Label text="Перемещения" styleClass="stat-label"/>
+                <Label fx:id="statTransfer" text="0" styleClass="stat-value" style="-fx-text-fill: #8e44ad;"/>
+            </VBox>
+            <!-- Карточка Инвентаризации -->
+            <VBox styleClass="stat-card" prefWidth="160" alignment="CENTER" spacing="8"
+                  style="-fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0, 0, 2);">
+                <Label text="📋" style="-fx-font-size: 28px;"/>
+                <Label text="Инвентаризации" styleClass="stat-label"/>
+                <Label fx:id="statInventory" text="0" styleClass="stat-value" style="-fx-text-fill: #d35400;"/>
+            </VBox>
+            <!-- Карточка Всего -->
+            <VBox styleClass="stat-card" prefWidth="160" alignment="CENTER" spacing="8"
+                  style="-fx-background-color: #2c3e50; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 6, 0, 0, 2);">
+                <Label text="📊" style="-fx-font-size: 28px;"/>
+                <Label text="Всего" styleClass="stat-label" style="-fx-text-fill: #bdc3c7;"/>
+                <Label fx:id="statTotal" text="0" styleClass="stat-value" style="-fx-text-fill: white;"/>
+            </VBox>
+        </HBox>
+    </VBox>
+
+    <Label fx:id="messageLabel" style="-fx-text-fill: #2c3e50; -fx-font-size: 13px;"/>
+</VBox>

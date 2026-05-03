@@ -13,12 +13,18 @@
 
     <artifactId>client</artifactId>
     <packaging>jar</packaging>
-    <n>Client - JavaFX GUI application</n>
+    <name>Client - JavaFX GUI application</name>
 
     <dependencies>
         <dependency>
             <groupId>by.bsuir.warehouse</groupId>
             <artifactId>common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>by.bsuir.warehouse</groupId>
+            <artifactId>common</artifactId>
+            <version>1.0.0</version>
         </dependency>
 
         <!-- JavaFX -->

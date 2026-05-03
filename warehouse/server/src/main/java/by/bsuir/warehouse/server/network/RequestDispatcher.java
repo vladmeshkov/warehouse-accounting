@@ -2,23 +2,18 @@ package by.bsuir.warehouse.server.network;
 
 import by.bsuir.warehouse.common.model.*;
 import by.bsuir.warehouse.common.protocol.*;
+import by.bsuir.warehouse.server.config.DBConnection;
 import by.bsuir.warehouse.server.dao.*;
 import by.bsuir.warehouse.server.dao.impl.*;
 import by.bsuir.warehouse.server.service.*;
 
 import java.io.Serializable;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-/**
- * Диспетчер запросов — реализует паттерн Factory Method.
- *
- * Маршрутизирует входящий Request к нужному обработчику на основе Action.
- * Проверяет права доступа (роли) перед выполнением каждой операции.
- * Возвращает Response с результатом или описанием ошибки.
- */
 public class RequestDispatcher {
 
     private static final Logger log = Logger.getLogger(RequestDispatcher.class.getName());
@@ -45,63 +40,64 @@ public class RequestDispatcher {
         this.documentDAO      = new DocumentDAOImpl();
     }
 
-    /**
-     * Обрабатывает запрос и возвращает ответ.
-     * LOGIN не требует токена. Все остальные запросы — требуют.
-     */
     public Response dispatch(Request request) {
         try {
-            // LOGIN — особый случай, без токена
             if (request.getAction() == Action.LOGIN) {
                 return handleLogin(request);
             }
+            if (request.getAction() == Action.REGISTER) {
+                return handleRegister(request);
+            }
+            if (request.getAction() == Action.GET_ALL_ROLES) {
+                return Response.ok((Serializable) new ArrayList<>(userDAO.findAllRoles()));
+            }
 
-            // Все остальные запросы требуют аутентификации
             User user = authService.authenticate(request.getToken());
 
             return switch (request.getAction()) {
                 case LOGOUT -> handleLogout(request);
 
-                // ── Пользователи ─────────────────────────────────────────
-                case GET_ALL_USERS   -> handleGetAllUsers(user);
-                case GET_USER_BY_ID  -> handleGetUserById(request, user);
-                case CREATE_USER     -> handleCreateUser(request, user);
-                case UPDATE_USER     -> handleUpdateUser(request, user);
-                case DEACTIVATE_USER -> handleDeactivateUser(request, user);
-                case GET_ALL_ROLES   -> Response.ok((Serializable) new ArrayList<>(userDAO.findAllRoles()));
+                case GET_ALL_USERS     -> handleGetAllUsers(user);
+                case GET_USER_BY_ID    -> handleGetUserById(request, user);
+                case CREATE_USER       -> handleCreateUser(request, user);
+                case UPDATE_USER       -> handleUpdateUser(request, user);
+                case DEACTIVATE_USER   -> handleDeactivateUser(request, user);
+                case DELETE_USER       -> handleDeleteUser(request, user);
 
-                // ── Товары ────────────────────────────────────────────────
+                case GET_PENDING_USERS -> handleGetPendingUsers(user);
+                case APPROVE_USER      -> handleApproveUser(request, user);
+                case REJECT_USER       -> handleRejectUser(request, user);
+
+                // ── Личный кабинет ────────────────────────────────────────
+                case GET_MY_PROFILE    -> handleMyProfile(user);
+                case UPDATE_MY_PROFILE -> handleUpdateProfile(request, user);
+
                 case GET_ALL_PRODUCTS  -> Response.ok((Serializable) new ArrayList<>(productDAO.findAll()));
                 case GET_PRODUCT_BY_ID -> Response.ok(productDAO.findById(request.getIntParam("id")).orElse(null));
                 case CREATE_PRODUCT    -> handleCreateProduct(request, user);
                 case UPDATE_PRODUCT    -> handleUpdateProduct(request, user);
                 case DELETE_PRODUCT    -> handleDeleteProduct(request, user);
 
-                // ── Склады ────────────────────────────────────────────────
                 case GET_ALL_WAREHOUSES  -> Response.ok((Serializable) new ArrayList<>(warehouseDAO.findAll()));
                 case GET_WAREHOUSE_BY_ID -> Response.ok(warehouseDAO.findById(request.getIntParam("id")).orElse(null));
                 case CREATE_WAREHOUSE    -> handleCreateWarehouse(request, user);
                 case UPDATE_WAREHOUSE    -> handleUpdateWarehouse(request, user);
                 case DELETE_WAREHOUSE    -> handleDeleteWarehouse(request, user);
 
-                // ── Остатки ───────────────────────────────────────────────
                 case GET_STOCK_ALL          -> Response.ok((Serializable) new ArrayList<>(new StockDAOImpl().findAll()));
                 case GET_STOCK_BY_WAREHOUSE -> Response.ok((Serializable) new ArrayList<>(
                         new StockDAOImpl().findByWarehouse(request.getIntParam("warehouseId"))));
 
-                // ── Поставщики ────────────────────────────────────────────
                 case GET_ALL_SUPPLIERS -> Response.ok((Serializable) new ArrayList<>(supplierDAO.findAll()));
                 case CREATE_SUPPLIER   -> handleCreateSupplier(request, user);
                 case UPDATE_SUPPLIER   -> handleUpdateSupplier(request, user);
                 case DELETE_SUPPLIER   -> handleDeleteSupplier(request, user);
 
-                // ── Покупатели ────────────────────────────────────────────
                 case GET_ALL_CUSTOMERS -> Response.ok((Serializable) new ArrayList<>(customerDAO.findAll()));
                 case CREATE_CUSTOMER   -> handleCreateCustomer(request, user);
                 case UPDATE_CUSTOMER   -> handleUpdateCustomer(request, user);
                 case DELETE_CUSTOMER   -> handleDeleteCustomer(request, user);
 
-                // ── Документы ─────────────────────────────────────────────
                 case PROCESS_INCOME    -> handleProcessIncome(request, user);
                 case PROCESS_OUTCOME   -> handleProcessOutcome(request, user);
                 case PROCESS_TRANSFER  -> handleProcessTransfer(request, user);
@@ -109,7 +105,6 @@ public class RequestDispatcher {
                 case GET_DOCUMENTS     -> Response.ok((Serializable) new ArrayList<>(documentDAO.findAll()));
                 case GET_DOCUMENT_BY_ID-> Response.ok(documentDAO.findById(request.getIntParam("id")).orElse(null));
 
-                // ── Прогнозирование ───────────────────────────────────────
                 case GET_FORECAST_ALL          -> Response.ok((Serializable) new ArrayList<>(forecastService.getLatestForecasts()));
                 case GET_FORECAST_BY_WAREHOUSE -> Response.ok((Serializable) new ArrayList<>(
                         forecastService.getForecastsByWarehouse(request.getIntParam("warehouseId"))));
@@ -130,14 +125,25 @@ public class RequestDispatcher {
         }
     }
 
-    // ── Обработчики ───────────────────────────────────────────────────────
-
     private Response handleLogin(Request req) {
         String username = req.getParam("username");
         String password = req.getParam("password");
         String token = authService.login(username, password);
         User user = authService.authenticate(token);
         return Response.withToken(token, user);
+    }
+
+    private Response handleRegister(Request req) {
+        User newUser = (User) req.getPayload();
+        if (newUser.getRole() != null && Role.ADMIN.equals(newUser.getRole().getRoleName())) {
+            return Response.error("Регистрация с ролью 'Администратор' запрещена.");
+        }
+        try {
+            authService.register(newUser);
+            return Response.ok("Заявка на регистрацию отправлена.");
+        } catch (Exception e) {
+            return Response.error(e.getMessage());
+        }
     }
 
     private Response handleLogout(Request req) {
@@ -165,8 +171,12 @@ public class RequestDispatcher {
 
     private Response handleUpdateUser(Request req, User user) {
         authService.requireRole(user, Role.ADMIN);
-        User u = (User) req.getPayload();
-        return userDAO.update(u)
+        User updatedUser = (User) req.getPayload();
+        if (updatedUser.getId() == user.getId() &&
+                !user.getRole().getRoleName().equals(updatedUser.getRole().getRoleName())) {
+            return Response.error("Нельзя изменить собственную роль.");
+        }
+        return userDAO.update(updatedUser)
                 ? Response.ok("Пользователь обновлён")
                 : Response.error("Не удалось обновить пользователя");
     }
@@ -174,11 +184,100 @@ public class RequestDispatcher {
     private Response handleDeactivateUser(Request req, User user) {
         authService.requireRole(user, Role.ADMIN);
         int targetId = req.getIntParam("id");
+        if (targetId == user.getId()) {
+            return Response.error("Нельзя заблокировать самого себя.");
+        }
         boolean active = Boolean.parseBoolean(req.getParam("active"));
         return userDAO.setActive(targetId, active)
                 ? Response.ok(active ? "Пользователь активирован" : "Пользователь заблокирован")
                 : Response.error("Не удалось изменить статус пользователя");
     }
+
+    private Response handleDeleteUser(Request req, User user) {
+        authService.requireRole(user, Role.ADMIN);
+        int targetId = req.getIntParam("id");
+        if (targetId == user.getId()) {
+            return Response.error("Нельзя удалить самого себя.");
+        }
+        return userDAO.delete(targetId)
+                ? Response.ok("Пользователь удалён")
+                : Response.error("Не удалось удалить пользователя");
+    }
+
+    private Response handleGetPendingUsers(User user) {
+        authService.requireRole(user, Role.ADMIN);
+        return Response.ok((Serializable) new ArrayList<>(userDAO.findPendingUsers()));
+    }
+
+    private Response handleApproveUser(Request req, User user) {
+        authService.requireRole(user, Role.ADMIN);
+        int userId = req.getIntParam("id");
+        return userDAO.setRegistrationStatus(userId, RegistrationStatus.APPROVED)
+                ? Response.ok("Пользователь одобрен")
+                : Response.error("Не удалось одобрить пользователя");
+    }
+
+    private Response handleRejectUser(Request req, User user) {
+        authService.requireRole(user, Role.ADMIN);
+        int userId = req.getIntParam("id");
+        return userDAO.setRegistrationStatus(userId, RegistrationStatus.REJECTED)
+                ? Response.ok("Заявка отклонена")
+                : Response.error("Не удалось отклонить заявку");
+    }
+
+    // ── Личный кабинет ────────────────────────────────────────────────────
+
+    private Response handleMyProfile(User user) {
+        User fresh = userDAO.findById(user.getId()).orElse(user);
+        UserProfile.UserStats stats = loadUserStats(user.getId());
+        UserProfile profile = new UserProfile(fresh, stats);
+        return Response.ok(profile);
+    }
+
+    private Response handleUpdateProfile(Request req, User currentUser) {
+        User updated = (User) req.getPayload();
+        updated.setId(currentUser.getId());
+        updated.setUsername(currentUser.getUsername());
+        updated.setRole(currentUser.getRole());
+        updated.setActive(currentUser.isActive());
+
+        if (updated.getPasswordHash() == null || updated.getPasswordHash().isEmpty()) {
+            updated.setPasswordHash(currentUser.getPasswordHash());
+        }
+
+        boolean ok = userDAO.update(updated);
+        if (ok) {
+            return Response.ok("Профиль обновлён");
+        } else {
+            return Response.error("Не удалось обновить профиль");
+        }
+    }
+
+    private UserProfile.UserStats loadUserStats(int userId) {
+        int income = 0, outcome = 0, transfer = 0, inventory = 0;
+        String sql = "SELECT document_type, COUNT(*) AS cnt FROM document WHERE responsible_user_id=? GROUP BY document_type";
+        try (Connection c = DBConnection.getInstance().getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String type = rs.getString("document_type");
+                    int cnt = rs.getInt("cnt");
+                    switch (type) {
+                        case "INCOME" -> income = cnt;
+                        case "OUTCOME" -> outcome = cnt;
+                        case "TRANSFER" -> transfer = cnt;
+                        case "INVENTORY" -> inventory = cnt;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            log.warning("Ошибка загрузки статистики: " + e.getMessage());
+        }
+        return new UserProfile.UserStats(income, outcome, transfer, inventory, 0);
+    }
+
+    // ── Товары ────────────────────────────────────────────────────────────
 
     private Response handleCreateProduct(Request req, User user) {
         authService.requireRole(user, Role.ADMIN, Role.PURCHASE_MANAGER);
@@ -300,10 +399,9 @@ public class RequestDispatcher {
     @SuppressWarnings("unchecked")
     private Response handleProcessInventory(Request req, User user) {
         authService.requireRole(user, Role.WAREHOUSE_WORKER, Role.ADMIN);
-        // payload: InventoryRequest содержит склад и карту фактических остатков
         InventoryRequest invReq = (InventoryRequest) req.getPayload();
-        InventoryService.InventoryResult result = inventoryService.processInventory(
-                invReq.warehouse, invReq.actualQuantities, user);
+        InventoryResult result = inventoryService.processInventory(
+                invReq.getWarehouse(), invReq.getActualQuantities(), user);
         return Response.ok("Инвентаризация проведена", result);
     }
 
@@ -311,17 +409,5 @@ public class RequestDispatcher {
         authService.requireRole(user, Role.ADMIN, Role.PURCHASE_MANAGER);
         forecastService.recalculateAll();
         return Response.ok("Прогнозы пересчитаны");
-    }
-
-    // ── Вспомогательный класс для запроса инвентаризации ─────────────────
-
-    public static class InventoryRequest implements java.io.Serializable {
-        public Warehouse warehouse;
-        public Map<Integer, Integer> actualQuantities;
-
-        public InventoryRequest(Warehouse warehouse, Map<Integer, Integer> actualQuantities) {
-            this.warehouse        = warehouse;
-            this.actualQuantities = actualQuantities;
-        }
     }
 }

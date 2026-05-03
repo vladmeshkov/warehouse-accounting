@@ -41,6 +41,7 @@ public class IncomeController {
     public void initialize() {
         setupColumns();
         itemsTable.setItems(items);
+        itemsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         loadReferenceData();
     }
 

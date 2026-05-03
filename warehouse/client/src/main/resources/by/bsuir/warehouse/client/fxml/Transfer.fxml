@@ -31,6 +31,7 @@
             <TableColumn fx:id="colUnit"    text="Ед.изм."      prefWidth="80"/>
             <TableColumn fx:id="colQty"     text="Количество"   prefWidth="120"/>
         </columns>
+        <placeholder><Label text="Нет позиций"/></placeholder>
     </TableView>
     <HBox alignment="CENTER_RIGHT">
         <Button text="✔ Оформить перемещение" onAction="#handleSubmit"

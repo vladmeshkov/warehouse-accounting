@@ -44,6 +44,7 @@ public class ForecastController {
         setupColumns();
         filtered = new FilteredList<>(allForecasts, f -> true);
         forecastTable.setItems(filtered);
+        forecastTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         loadWarehouses();
         loadData();
     }

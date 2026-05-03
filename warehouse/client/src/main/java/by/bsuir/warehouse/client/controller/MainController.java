@@ -18,11 +18,6 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-/**
- * Контроллер главного окна.
- * Управляет навигацией — загружает нужный FXML в contentPane.
- * Скрывает кнопки недоступные для роли текущего пользователя.
- */
 public class MainController {
 
     private static final Logger log = Logger.getLogger(MainController.class.getName());
@@ -44,6 +39,8 @@ public class MainController {
     @FXML private Button btnSuppliers;
     @FXML private Button btnCustomers;
     @FXML private Button btnUsers;
+    @FXML private Button btnRequests;
+    @FXML private Button btnProfile;
 
     private Button activeButton;
 
@@ -54,10 +51,8 @@ public class MainController {
             userInfoLabel.setText(user.getFullName() + "\n" + user.getRole().getRoleName());
         }
         applyRoleRestrictions(user);
-        showDashboard(); // стартовый экран
+        showDashboard();
     }
-
-    // ── Навигация ────────────────────────────────────────────────────────
 
     @FXML public void showDashboard()  { loadView("Dashboard.fxml",  btnDashboard); }
     @FXML public void showStock()      { loadView("Stock.fxml",       btnStock); }
@@ -72,14 +67,14 @@ public class MainController {
     @FXML public void showSuppliers()  { loadView("Suppliers.fxml",   btnSuppliers); }
     @FXML public void showCustomers()  { loadView("Customers.fxml",   btnCustomers); }
     @FXML public void showUsers()      { loadView("Users.fxml",       btnUsers); }
+    @FXML public void showRequests()   { loadView("RegistrationRequests.fxml", btnRequests); }
+    @FXML public void showProfile()    { loadView("Profile.fxml",     btnProfile); }
 
     @FXML
     public void handleLogout() {
         try {
             ClientContext ctx = ClientContext.getInstance();
-            ctx.send(new Request.Builder(Action.LOGOUT)
-                    .token(ctx.send(new Request.Builder(Action.LOGOUT).build()).getToken())
-                    .build());
+            ctx.send(new Request.Builder(Action.LOGOUT).build());
         } catch (Exception ignored) {}
 
         ClientContext.getInstance().disconnect();
@@ -88,10 +83,9 @@ public class MainController {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/by/bsuir/warehouse/client/fxml/Login.fxml"));
             Stage stage = new Stage();
-            Scene scene = new Scene(loader.load(), 420, 320);
+            Scene scene = new Scene(loader.load(), 400, 520);
             scene.getStylesheets().add(
-                    getClass().getResource("/by/bsuir/warehouse/client/css/style.css")
-                              .toExternalForm());
+                    getClass().getResource("/by/bsuir/warehouse/client/css/login-style.css").toExternalForm());
             stage.setTitle("Складской учёт — Вход");
             stage.setScene(scene);
             stage.setResizable(false);
@@ -104,8 +98,6 @@ public class MainController {
         }
     }
 
-    // ── Вспомогательные методы ───────────────────────────────────────────
-
     private void loadView(String fxmlName, Button navButton) {
         try {
             FXMLLoader loader = new FXMLLoader(
@@ -113,7 +105,6 @@ public class MainController {
             Node view = loader.load();
             contentPane.getChildren().setAll(view);
 
-            // Выделяем активную кнопку
             if (activeButton != null) {
                 activeButton.getStyleClass().remove("nav-button-active");
             }
@@ -127,9 +118,6 @@ public class MainController {
         }
     }
 
-    /**
-     * Скрывает кнопки навигации недоступные для роли пользователя.
-     */
     private void applyRoleRestrictions(User user) {
         if (user == null) return;
         String role = user.getRole().getRoleName();
@@ -137,6 +125,10 @@ public class MainController {
         // Пользователи — только ADMIN
         btnUsers.setVisible(Role.ADMIN.equals(role));
         btnUsers.setManaged(Role.ADMIN.equals(role));
+
+        // Заявки на регистрацию — только ADMIN
+        btnRequests.setVisible(Role.ADMIN.equals(role));
+        btnRequests.setManaged(Role.ADMIN.equals(role));
 
         // Приход — ADMIN, PURCHASE_MANAGER, WAREHOUSE_WORKER
         boolean canIncome = Role.ADMIN.equals(role)
@@ -152,17 +144,33 @@ public class MainController {
         btnOutcome.setVisible(canOutcome);
         btnOutcome.setManaged(canOutcome);
 
-        // Перемещение и инвентаризация — ADMIN, WAREHOUSE_WORKER
+        // Перемещение, Инвентаризация — ADMIN, WAREHOUSE_WORKER
         boolean canTransfer = Role.ADMIN.equals(role) || Role.WAREHOUSE_WORKER.equals(role);
         btnTransfer.setVisible(canTransfer);
         btnTransfer.setManaged(canTransfer);
         btnInventory.setVisible(canTransfer);
         btnInventory.setManaged(canTransfer);
 
+        // Товары, Склады — все, кроме бухгалтера
+        boolean canEditCatalog = !Role.ACCOUNTANT.equals(role);
+        btnProducts.setVisible(canEditCatalog);
+        btnProducts.setManaged(canEditCatalog);
+        btnWarehouses.setVisible(canEditCatalog);
+        btnWarehouses.setManaged(canEditCatalog);
+
         // Поставщики — ADMIN, PURCHASE_MANAGER
         boolean canSuppliers = Role.ADMIN.equals(role) || Role.PURCHASE_MANAGER.equals(role);
         btnSuppliers.setVisible(canSuppliers);
         btnSuppliers.setManaged(canSuppliers);
+
+        // Покупатели — ADMIN, SALES_MANAGER
+        boolean canCustomers = Role.ADMIN.equals(role) || Role.SALES_MANAGER.equals(role);
+        btnCustomers.setVisible(canCustomers);
+        btnCustomers.setManaged(canCustomers);
+
+        // Личный кабинет доступен всем
+        btnProfile.setVisible(true);
+        btnProfile.setManaged(true);
     }
 
     private void showError(String msg) {

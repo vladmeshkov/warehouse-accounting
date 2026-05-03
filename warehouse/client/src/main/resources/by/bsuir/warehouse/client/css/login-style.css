@@ -1,0 +1,97 @@
+/* Стили для экранов входа и регистрации */
+.root {
+    -fx-background-color: linear-gradient(to bottom, #e3f2fd, #bbdefb);
+}
+
+.card {
+    -fx-background-color: white;
+    -fx-background-radius: 12px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 4);
+    -fx-padding: 30 25 25 25;
+    -fx-min-width: 380px;
+    -fx-max-width: 400px;
+}
+
+.title {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1565c0;
+    -fx-font-family: "Segoe UI", "Roboto", sans-serif;
+}
+
+.subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: #546e7a;
+    -fx-font-family: "Segoe UI", "Roboto", sans-serif;
+}
+
+.input-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: #37474f;
+    -fx-font-weight: bold;
+}
+
+.text-field, .password-field, .combo-box {
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-border-color: #cfd8dc;
+    -fx-border-width: 1px;
+    -fx-padding: 10px 12px;
+    -fx-font-size: 14px;
+    -fx-font-family: "Segoe UI", "Roboto", sans-serif;
+    -fx-background-color: #f8f9fa;
+}
+
+.text-field:focused, .password-field:focused, .combo-box:focused {
+    -fx-border-color: #42a5f5;
+    -fx-effect: dropshadow(gaussian, rgba(66,165,245,0.25), 4, 0, 0, 1);
+}
+
+.button-primary {
+    -fx-background-color: linear-gradient(to bottom, #1976d2, #1565c0);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+    -fx-padding: 12px 24px;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(25,118,210,0.3), 4, 0, 0, 2);
+}
+
+.button-primary:hover {
+    -fx-background-color: linear-gradient(to bottom, #1e88e5, #1976d2);
+}
+
+.button-success {
+    -fx-background-color: linear-gradient(to bottom, #2e7d32, #1b5e20);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+    -fx-padding: 12px 24px;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(46,125,50,0.3), 4, 0, 0, 2);
+}
+
+.button-success:hover {
+    -fx-background-color: linear-gradient(to bottom, #388e3c, #2e7d32);
+}
+
+.hyperlink {
+    -fx-text-fill: #1565c0;
+    -fx-font-size: 13px;
+    -fx-underline: false;
+    -fx-font-family: "Segoe UI", "Roboto", sans-serif;
+}
+
+.error-label {
+    -fx-text-fill: #d32f2f;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+/* ComboBox специально */
+.combo-box .list-cell {
+    -fx-padding: 10px 12px;
+    -fx-font-size: 14px;
+}

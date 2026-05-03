@@ -39,6 +39,7 @@ public class StockController {
         setupColumns();
         filteredStock = new FilteredList<>(allStock, s -> true);
         stockTable.setItems(filteredStock);
+        stockTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         warehouseFilter.getItems().add("Все склады");
         warehouseFilter.getSelectionModel().selectFirst();

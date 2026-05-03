@@ -39,9 +39,9 @@ public class ProductsController {
     public void initialize() {
         setupColumns();
         setupSearch();
+        productsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         loadData();
     }
-
     private void setupColumns() {
         colId      .setCellValueFactory(new PropertyValueFactory<>("id"));
         colArticle .setCellValueFactory(new PropertyValueFactory<>("article"));

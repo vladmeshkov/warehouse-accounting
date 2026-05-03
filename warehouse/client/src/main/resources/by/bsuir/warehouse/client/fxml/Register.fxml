@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="by.bsuir.warehouse.client.controller.RegisterController"
+           styleClass="root"
+           stylesheets="@../css/login-style.css">
+    <VBox styleClass="card" alignment="CENTER" spacing="14">
+        <Label text="Регистрация" styleClass="title"/>
+        <Label text="Заявка будет рассмотрена администратором" styleClass="subtitle" wrapText="true"/>
+
+        <VBox spacing="4" alignment="CENTER_LEFT">
+            <Label text="Логин" styleClass="input-label"/>
+            <TextField fx:id="usernameField" promptText="Придумайте логин"/>
+        </VBox>
+        <VBox spacing="4" alignment="CENTER_LEFT">
+            <Label text="Пароль" styleClass="input-label"/>
+            <PasswordField fx:id="passwordField" promptText="Придумайте пароль"/>
+        </VBox>
+        <VBox spacing="4" alignment="CENTER_LEFT">
+            <Label text="Повторите пароль" styleClass="input-label"/>
+            <PasswordField fx:id="confirmPasswordField" promptText="Повторите пароль"/>
+        </VBox>
+        <VBox spacing="4" alignment="CENTER_LEFT">
+            <Label text="Роль" styleClass="input-label"/>
+            <ComboBox fx:id="roleCombo" promptText="Выберите роль"/>
+        </VBox>
+        <VBox spacing="4" alignment="CENTER_LEFT">
+            <Label text="ФИО (необязательно)" styleClass="input-label"/>
+            <TextField fx:id="fullNameField" promptText="Иванов Иван Иванович"/>
+        </VBox>
+
+        <Label fx:id="errorLabel" text="" styleClass="error-label" wrapText="true"/>
+
+        <Button fx:id="registerButton" text="Отправить заявку" onAction="#handleRegister"
+                styleClass="button-success" maxWidth="Infinity" defaultButton="true"/>
+
+        <Hyperlink text="← Назад ко входу" onAction="#openLogin" styleClass="hyperlink"/>
+    </VBox>
+</StackPane>

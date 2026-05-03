@@ -14,18 +14,15 @@
         <VBox styleClass="nav-panel" prefWidth="210" spacing="2">
             <padding><Insets top="20" bottom="20"/></padding>
 
-            <!-- Логотип / название -->
             <Label text="📦 Склад" style="-fx-text-fill: white; -fx-font-size: 18px;
                    -fx-font-weight: bold; -fx-padding: 0 20 16 20;"/>
 
-            <!-- Пользователь -->
             <Label fx:id="userInfoLabel" text=""
                    style="-fx-text-fill: #95a5a6; -fx-font-size: 11px;
                           -fx-padding: 0 20 12 20;" wrapText="true"/>
 
             <Separator style="-fx-background-color: #34495e;"/>
 
-            <!-- Навигационные кнопки -->
             <Button fx:id="btnDashboard"  text="🏠  Главная"
                     styleClass="nav-button" onAction="#showDashboard"  maxWidth="Infinity"/>
             <Button fx:id="btnStock"      text="📊  Остатки"
@@ -52,8 +49,13 @@
                     styleClass="nav-button" onAction="#showCustomers"  maxWidth="Infinity"/>
             <Button fx:id="btnUsers"      text="👤  Пользователи"
                     styleClass="nav-button" onAction="#showUsers"      maxWidth="Infinity"/>
+            <Button fx:id="btnRequests"   text="📩  Заявки на регистрацию"
+                    styleClass="nav-button" onAction="#showRequests"   maxWidth="Infinity"/>
 
-            <!-- Спейсер -->
+            <Separator style="-fx-background-color: #34495e;"/>
+            <Button fx:id="btnProfile"    text="👤  Личный кабинет"
+                    styleClass="nav-button" onAction="#showProfile"    maxWidth="Infinity"/>
+
             <Region VBox.vgrow="ALWAYS"/>
 
             <Separator style="-fx-background-color: #34495e;"/>

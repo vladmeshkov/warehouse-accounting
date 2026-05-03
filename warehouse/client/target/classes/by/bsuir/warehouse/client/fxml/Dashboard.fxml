@@ -1,49 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
+<?import javafx.scene.shape.Circle?>
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="by.bsuir.warehouse.client.controller.DashboardController"
       spacing="20" style="-fx-background-color: #f4f6fb;">
-    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+    <padding><Insets top="24" right="32" bottom="24" left="32"/></padding>
 
-    <Label text="Главная" styleClass="section-title"/>
-    <Label fx:id="subtitleLabel" text="" style="-fx-text-fill: #7f8c8d;"/>
+    <!-- Верхняя панель приветствия -->
+    <HBox spacing="20" alignment="CENTER_LEFT"
+          style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 12;
+                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 8, 0, 0, 2);">
+        <StackPane prefWidth="72" prefHeight="72">
+            <Circle radius="36" fill="#2980b9"/>
+            <Label fx:id="avatarLabel" text="А" textFill="white"
+                   style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+        </StackPane>
+        <VBox spacing="4" HBox.hgrow="ALWAYS">
+            <Label fx:id="greetingLabel" text="Добро пожаловать, Владислав!"
+                   style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+            <Label fx:id="subtitleLabel" text="Обновлено: ..."
+                   style="-fx-font-size: 13px; -fx-text-fill: #7f8c8d;"/>
+        </VBox>
+        <Button text="Обновить" onAction="#refresh"
+                style="-fx-background-color: #2980b9; -fx-text-fill: white;
+                       -fx-background-radius: 6; -fx-cursor: hand; -fx-padding: 8 16 8 16;"/>
+    </HBox>
 
-    <!-- Карточки статистики -->
-    <HBox spacing="16">
-        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" prefWidth="200">
+    <!-- Заголовок статистики -->
+    <Label text="Складская сводка" styleClass="section-title"/>
+
+    <!-- Карточки статистики – растягиваются на всю ширину -->
+    <HBox spacing="16" HBox.hgrow="ALWAYS">
+        <VBox styleClass="stat-card" alignment="CENTER" spacing="8"
+              HBox.hgrow="ALWAYS" maxWidth="Infinity"
+              style="-fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0, 0, 2);">
+            <Label text="📦" style="-fx-font-size: 28px;"/>
             <Label text="Товарных позиций" styleClass="stat-label"/>
-            <Label fx:id="productCountLabel" text="—" styleClass="stat-value"/>
+            <Label fx:id="productCountLabel" text="0" styleClass="stat-value" style="-fx-text-fill: #2980b9;"/>
         </VBox>
-        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" prefWidth="200">
+        <VBox styleClass="stat-card" alignment="CENTER" spacing="8"
+              HBox.hgrow="ALWAYS" maxWidth="Infinity"
+              style="-fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0, 0, 2);">
+            <Label text="🏭" style="-fx-font-size: 28px;"/>
             <Label text="Складов" styleClass="stat-label"/>
-            <Label fx:id="warehouseCountLabel" text="—" styleClass="stat-value"/>
+            <Label fx:id="warehouseCountLabel" text="0" styleClass="stat-value" style="-fx-text-fill: #27ae60;"/>
         </VBox>
-        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" prefWidth="200">
+        <VBox styleClass="stat-card" alignment="CENTER" spacing="8"
+              HBox.hgrow="ALWAYS" maxWidth="Infinity"
+              style="-fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0, 0, 2);">
+            <Label text="⚠" style="-fx-font-size: 28px;"/>
             <Label text="Критических позиций" styleClass="stat-label"/>
-            <Label fx:id="criticalCountLabel" text="—" styleClass="stat-value"
-                   style="-fx-text-fill: #e74c3c;"/>
+            <Label fx:id="criticalCountLabel" text="0" styleClass="stat-value" style="-fx-text-fill: #e74c3c;"/>
         </VBox>
-        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" prefWidth="200">
+        <VBox styleClass="stat-card" alignment="CENTER" spacing="8"
+              HBox.hgrow="ALWAYS" maxWidth="Infinity"
+              style="-fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0, 0, 2);">
+            <Label text="📄" style="-fx-font-size: 28px;"/>
             <Label text="Документов сегодня" styleClass="stat-label"/>
-            <Label fx:id="docsTodayLabel" text="—" styleClass="stat-value"
-                   style="-fx-text-fill: #27ae60;"/>
+            <Label fx:id="docsTodayLabel" text="0" styleClass="stat-value" style="-fx-text-fill: #8e44ad;"/>
         </VBox>
     </HBox>
 
     <!-- Критические позиции -->
-    <VBox spacing="8" VBox.vgrow="ALWAYS">
-        <HBox spacing="12" alignment="CENTER_LEFT">
-            <Label text="⚠  Критические остатки (дефицит ≤ 7 дней)"
-                   style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;"/>
-            <Button text="Обновить" onAction="#refresh"
-                    style="-fx-background-color: #2980b9; -fx-text-fill: white;
-                           -fx-background-radius: 4; -fx-padding: 4 12 4 12; -fx-cursor: hand;"/>
-        </HBox>
-
+    <VBox spacing="12" VBox.vgrow="ALWAYS">
+        <Label text="⚠  Дефицитные товары (≤ 7 дней)"
+               style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;"/>
         <TableView fx:id="criticalTable" VBox.vgrow="ALWAYS">
             <columns>
                 <TableColumn fx:id="colWarehouse" text="Склад"       prefWidth="160"/>
@@ -51,9 +74,10 @@
                 <TableColumn fx:id="colProduct"   text="Товар"       prefWidth="220"/>
                 <TableColumn fx:id="colStock"     text="Остаток"     prefWidth="90"/>
                 <TableColumn fx:id="colMin"       text="Минимум"     prefWidth="90"/>
-                <TableColumn fx:id="colDays"      text="Дней до дефицита" prefWidth="140"/>
+                <TableColumn fx:id="colDays"      text="Статус"      prefWidth="140"/>
                 <TableColumn fx:id="colDate"      text="Дата дефицита"    prefWidth="130"/>
             </columns>
+            <placeholder><Label text="Нет критических остатков"/></placeholder>
         </TableView>
     </VBox>
 </VBox>

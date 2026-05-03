@@ -1,5 +1,6 @@
 package by.bsuir.warehouse.server.service;
 
+import by.bsuir.warehouse.common.model.RegistrationStatus;
 import by.bsuir.warehouse.common.model.User;
 import by.bsuir.warehouse.common.util.PasswordUtil;
 import by.bsuir.warehouse.server.config.ServerConfig;
@@ -12,23 +13,11 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-/**
- * Сервис аутентификации и управления сессиями.
- *
- * Хранит активные сессии в ConcurrentHashMap<token, SessionEntry>.
- * Текущий пользователь доступен через ThreadLocal для каждого потока-обработчика.
- * Пароли проверяются только в виде SHA-256 хэша — никогда в открытом виде.
- */
 public class AuthService {
 
     private static final Logger log = Logger.getLogger(AuthService.class.getName());
-
-    /** Текущий аутентифицированный пользователь для каждого потока */
     private static final ThreadLocal<User> currentUser = new ThreadLocal<>();
-
-    /** Активные сессии: token → SessionEntry */
     private final Map<String, SessionEntry> sessions = new ConcurrentHashMap<>();
-
     private final UserDAO userDAO;
     private final int sessionTimeoutMs;
 
@@ -38,13 +27,6 @@ public class AuthService {
                 ServerConfig.getInstance().getSessionTimeoutMinutes() * 60 * 1000;
     }
 
-    // ── Публичный API ─────────────────────────────────────────────────────
-
-    /**
-     * Проверяет логин + пароль.
-     * @return токен сессии, если авторизация прошла успешно
-     * @throws SecurityException если логин/пароль неверны или учётная запись заблокирована
-     */
     public String login(String username, String plainPassword) {
         if (username == null || plainPassword == null) {
             throw new SecurityException("Логин и пароль не могут быть пустыми");
@@ -56,14 +38,21 @@ public class AuthService {
         }
 
         User user = opt.get();
-        if (!user.isActive()) {
-            throw new SecurityException("Учётная запись заблокирована");
-        }
         if (!PasswordUtil.verify(plainPassword, user.getPasswordHash())) {
             throw new SecurityException("Неверный пароль");
         }
 
-        // Инвалидируем старые сессии этого пользователя
+        // Проверка статуса регистрации
+        if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
+            throw new SecurityException("Ваша заявка на регистрацию ещё не рассмотрена администратором.");
+        }
+        if (user.getRegistrationStatus() == RegistrationStatus.REJECTED) {
+            throw new SecurityException("Ваша заявка на регистрацию отклонена. Обратитесь к администратору.");
+        }
+        if (!user.isActive()) {
+            throw new SecurityException("Учётная запись заблокирована");
+        }
+
         sessions.entrySet().removeIf(e -> e.getValue().user.getId() == user.getId());
 
         String token = UUID.randomUUID().toString();
@@ -72,10 +61,23 @@ public class AuthService {
         return token;
     }
 
-    /**
-     * Проверяет токен и устанавливает текущего пользователя в ThreadLocal.
-     * @throws SecurityException если токен недействителен или истёк
-     */
+    public void register(User user) {
+        if (user == null) throw new IllegalArgumentException("Данные пользователя не могут быть пустыми");
+        if (user.getUsername() == null || user.getUsername().trim().isEmpty())
+            throw new IllegalArgumentException("Логин обязателен");
+        if (user.getPasswordHash() == null || user.getPasswordHash().isEmpty())
+            throw new IllegalArgumentException("Пароль обязателен");
+        if (user.getRole() == null) throw new IllegalArgumentException("Роль не выбрана");
+
+        if (userDAO.findByUsername(user.getUsername().trim()).isPresent()) {
+            throw new SecurityException("Пользователь с таким логином уже существует");
+        }
+
+        int id = userDAO.register(user);
+        user.setId(id);
+        log.info("Новый пользователь зарегистрирован (ожидает одобрения): " + user.getUsername());
+    }
+
     public User authenticate(String token) {
         if (token == null) throw new SecurityException("Токен не передан");
 
@@ -87,12 +89,11 @@ public class AuthService {
             throw new SecurityException("Сессия истекла. Войдите заново.");
         }
 
-        entry.createdAt = System.currentTimeMillis(); // обновляем время активности
+        entry.createdAt = System.currentTimeMillis();
         currentUser.set(entry.user);
         return entry.user;
     }
 
-    /** Завершает сессию пользователя */
     public void logout(String token) {
         if (token != null) {
             SessionEntry removed = sessions.remove(token);
@@ -103,10 +104,6 @@ public class AuthService {
         currentUser.remove();
     }
 
-    /**
-     * Проверяет, имеет ли текущий пользователь указанную роль.
-     * @throws SecurityException если роль не совпадает
-     */
     public void requireRole(User user, String... allowedRoles) {
         if (user == null) throw new SecurityException("Не аутентифицирован");
         String userRole = user.getRole().getRoleName();
@@ -117,17 +114,13 @@ public class AuthService {
                 + String.join(" или ", allowedRoles));
     }
 
-    /** Очищает ThreadLocal после обработки запроса */
     public static void clearCurrentUser() {
         currentUser.remove();
     }
 
-    /** Возвращает текущего пользователя из ThreadLocal */
     public static User getCurrentUser() {
         return currentUser.get();
     }
-
-    // ── Внутренний класс сессии ───────────────────────────────────────────
 
     private static class SessionEntry {
         final User user;

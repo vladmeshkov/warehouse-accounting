@@ -2,10 +2,6 @@ package by.bsuir.warehouse.common.model;
 
 import java.time.LocalDateTime;
 
-/**
- * Пользователь системы.
- * Пароль хранится только в виде SHA-256 хэша — никогда в открытом виде.
- */
 public class User extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
@@ -18,6 +14,7 @@ public class User extends BaseEntity {
     private String email;
     private LocalDateTime createdAt;
     private boolean active;
+    private RegistrationStatus registrationStatus;
 
     public User() {}
 
@@ -54,6 +51,9 @@ public class User extends BaseEntity {
 
     public boolean isActive()               { return active; }
     public void setActive(boolean v)        { this.active = v; }
+
+    public RegistrationStatus getRegistrationStatus() { return registrationStatus; }
+    public void setRegistrationStatus(RegistrationStatus v) { this.registrationStatus = v; }
 
     /** Удобный метод для проверки роли */
     public boolean hasRole(String roleName) {

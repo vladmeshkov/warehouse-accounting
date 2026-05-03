@@ -129,7 +129,7 @@ class ForecastServiceTest {
     @Test
     @DisplayName("calculateDeficitForecast: нулевой остаток → дефицит уже наступил")
     void forecast_zeroStock_deficitNow() {
-        when(forecastDAO.findHistory(anyInt(), anyInt())).thenReturn(new ArrayList<>());
+        //when(forecastDAO.findHistory(anyInt(), anyInt())).thenReturn(new ArrayList<>());
         doNothing().when(forecastDAO).upsertForecast(any());
 
         DeficitForecast result = forecastService.calculateDeficitForecast(1, 1, 0, 5);

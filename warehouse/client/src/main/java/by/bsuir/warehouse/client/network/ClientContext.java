@@ -5,18 +5,9 @@ import by.bsuir.warehouse.common.protocol.Request;
 import by.bsuir.warehouse.common.protocol.Response;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.prefs.Preferences;
 
-/**
- * Контекст клиентского приложения (Singleton).
- *
- * Хранит:
- *   - NetworkClient (соединение с сервером)
- *   - текущего аутентифицированного пользователя
- *   - настройки подключения (хост, порт)
- *
- * Используется всеми контроллерами JavaFX для отправки запросов.
- */
 public class ClientContext {
 
     private static volatile ClientContext instance;
@@ -63,18 +54,22 @@ public class ClientContext {
 
     /**
      * Отправляет запрос и возвращает Response.
-     * Автоматически добавляет токен сессии.
+     * Автоматически добавляет токен сессии и **копирует исходные параметры**.
      */
     public Response send(Request request) throws IOException {
         if (client == null || !client.isConnected()) {
             connect();
         }
-        // Добавляем токен если запрос без него
+        // Добавляем токен если запрос без него и копируем параметры
         if (client.getSessionToken() != null && request.getToken() == null) {
-            request = new Request.Builder(request.getAction())
+            Request.Builder builder = new Request.Builder(request.getAction())
                     .token(client.getSessionToken())
-                    .payload(request.getPayload())
-                    .build();
+                    .payload((Serializable) request.getPayload());
+            // <-- ВАЖНО: копируем исходные параметры
+            if (request.getParams() != null) {
+                request.getParams().forEach(builder::param);
+            }
+            request = builder.build();
         }
         return client.send(request);
     }

@@ -13,7 +13,7 @@
 
     <artifactId>server</artifactId>
     <packaging>jar</packaging>
-    <n>Server - Business logic and database access</n>
+    <name>Server - Business logic and database access</name>
 
     <dependencies>
         <dependency>

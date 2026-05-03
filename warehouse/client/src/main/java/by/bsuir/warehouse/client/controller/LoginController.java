@@ -15,34 +15,18 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-/**
- * Контроллер экрана авторизации.
- *
- * При успешном входе:
- *   1. Сохраняет User в ClientContext
- *   2. Открывает главное окно Main.fxml
- *   3. Закрывает окно входа
- */
 public class LoginController {
 
     private static final Logger log = Logger.getLogger(LoginController.class.getName());
 
     @FXML private TextField     usernameField;
     @FXML private PasswordField passwordField;
-    @FXML private TextField     hostField;
-    @FXML private TextField     portField;
     @FXML private Label         errorLabel;
     @FXML private Button        loginButton;
 
     @FXML
     public void initialize() {
-        ClientContext ctx = ClientContext.getInstance();
-        hostField.setText(ctx.getServerHost());
-        portField.setText(String.valueOf(ctx.getServerPort()));
-
-        // Enter в поле пароля — попытка входа
         passwordField.setOnAction(e -> handleLogin());
-
         errorLabel.setText("");
     }
 
@@ -50,32 +34,18 @@ public class LoginController {
     public void handleLogin() {
         String username = usernameField.getText().trim();
         String password = passwordField.getText();
-        String host     = hostField.getText().trim();
-        String portStr  = portField.getText().trim();
 
-        // Базовая валидация на клиенте
         if (username.isEmpty() || password.isEmpty()) {
             showError("Введите логин и пароль");
             return;
         }
 
-        int port;
-        try {
-            port = Integer.parseInt(portStr);
-        } catch (NumberFormatException e) {
-            showError("Неверный порт: " + portStr);
-            return;
-        }
-
-        // Блокируем кнопку на время запроса
         loginButton.setDisable(true);
         errorLabel.setText("Подключение...");
 
-        // Выполняем в фоновом потоке — не блокируем UI
         Thread loginThread = new Thread(() -> {
             try {
                 ClientContext ctx = ClientContext.getInstance();
-                ctx.saveConnectionSettings(host, port);
                 ctx.connect();
 
                 Request request = new Request.Builder(Action.LOGIN)
@@ -89,24 +59,42 @@ public class LoginController {
                     if (response.isSuccess()) {
                         User user = (User) response.getData();
                         ctx.setCurrentUser(user);
-                        log.info("Вход выполнен: " + user.getUsername()
-                                 + " [" + user.getRole().getRoleName() + "]");
                         openMainWindow();
                     } else {
                         loginButton.setDisable(false);
                         showError(response.getMessage());
                     }
                 });
-
             } catch (IOException e) {
                 Platform.runLater(() -> {
                     loginButton.setDisable(false);
-                    showError("Нет соединения с сервером: " + host + ":" + port);
+                    showError("Нет соединения с сервером (localhost:8888). Убедитесь, что сервер запущен.");
                 });
             }
         });
         loginThread.setDaemon(true);
         loginThread.start();
+    }
+
+    @FXML
+    public void openRegisterWindow() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(
+                    "/by/bsuir/warehouse/client/fxml/Register.fxml"));
+            Stage stage = (Stage) loginButton.getScene().getWindow();
+
+            // Устанавливаем размер специально для регистрации
+            Scene scene = new Scene(loader.load(), 480, 620);
+            scene.getStylesheets().add(
+                    getClass().getResource("/by/bsuir/warehouse/client/css/login-style.css")
+                            .toExternalForm());
+
+            stage.setScene(scene);
+            stage.setTitle("Регистрация нового пользователя");
+            stage.setResizable(false);
+        } catch (IOException e) {
+            errorLabel.setText("Ошибка открытия формы регистрации");
+        }
     }
 
     private void openMainWindow() {
@@ -117,8 +105,7 @@ public class LoginController {
             Scene scene = new Scene(loader.load(), 1100, 700);
             scene.getStylesheets().add(
                     getClass().getResource("/by/bsuir/warehouse/client/css/style.css")
-                              .toExternalForm());
-
+                            .toExternalForm());
             User user = ClientContext.getInstance().getCurrentUser();
             mainStage.setTitle("Складской учёт  —  "
                     + user.getFullName() + "  [" + user.getRole().getRoleName() + "]");
@@ -127,10 +114,8 @@ public class LoginController {
             mainStage.setMinHeight(600);
             mainStage.show();
 
-            // Закрываем окно входа
             Stage loginStage = (Stage) loginButton.getScene().getWindow();
             loginStage.close();
-
         } catch (IOException e) {
             showError("Ошибка открытия главного окна: " + e.getMessage());
             loginButton.setDisable(false);

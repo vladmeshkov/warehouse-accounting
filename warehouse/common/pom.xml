@@ -13,7 +13,7 @@
 
     <artifactId>common</artifactId>
     <packaging>jar</packaging>
-    <n>Common - Shared entities and protocol</n>
+    <name>Common - Shared entities and protocol</name>
 
     <dependencies>
         <dependency>
