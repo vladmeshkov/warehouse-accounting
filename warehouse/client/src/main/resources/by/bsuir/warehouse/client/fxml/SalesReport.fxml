@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="by.bsuir.warehouse.client.controller.SalesReportController"
+      spacing="12" style="-fx-background-color: #f4f6fb;">
+    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+    <Label text="📈 Отчёт по стоимости проданных товаров" styleClass="section-title"/>
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <Label text="С:"/>
+        <DatePicker fx:id="dateFrom"/>
+        <Label text="По:"/>
+        <DatePicker fx:id="dateTo"/>
+        <Button fx:id="generateBtn" text="Сформировать" onAction="#generateReport"
+                style="-fx-background-color:#2980b9;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 14 6 14;"/>
+        <Button text="💾 Сохранить в TXT" onAction="#saveToFile"
+                style="-fx-background-color:#27ae60;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 14 6 14;"/>
+    </HBox>
+    <TableView fx:id="reportTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colArticle" text="Артикул" prefWidth="100"/>
+            <TableColumn fx:id="colProduct" text="Наименование" prefWidth="250"/>
+            <TableColumn fx:id="colQty" text="Продано" prefWidth="100"/>
+            <TableColumn fx:id="colPrice" text="Ср. цена" prefWidth="100"/>
+            <TableColumn fx:id="colTotal" text="Стоимость" prefWidth="120"/>
+        </columns>
+        <placeholder><Label text="Нет данных. Выберите период и нажмите «Сформировать»"/></placeholder>
+    </TableView>
+    <Label fx:id="statusLabel" text="" style="-fx-text-fill:#7f8c8d;-fx-font-size:11px;"/>
+</VBox>

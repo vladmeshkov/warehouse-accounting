@@ -83,8 +83,7 @@ public class LoginController {
                     "/by/bsuir/warehouse/client/fxml/Register.fxml"));
             Stage stage = (Stage) loginButton.getScene().getWindow();
 
-            // Устанавливаем размер специально для регистрации
-            Scene scene = new Scene(loader.load(), 480, 620);
+            Scene scene = new Scene(loader.load(), 580, 700);
             scene.getStylesheets().add(
                     getClass().getResource("/by/bsuir/warehouse/client/css/login-style.css")
                             .toExternalForm());

@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="by.bsuir.warehouse.client.controller.ProductsController"
       spacing="12" style="-fx-background-color: #f4f6fb;">
@@ -13,13 +11,13 @@
 
     <!-- Панель инструментов -->
     <HBox styleClass="toolbar" spacing="8" alignment="CENTER_LEFT">
-        <Button text="＋ Добавить" onAction="#handleAdd"
+        <Button fx:id="addBtn" text="＋ Добавить" onAction="#handleAdd"
                 style="-fx-background-color:#27ae60;-fx-text-fill:white;
                        -fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 14 6 14;"/>
-        <Button text="✏ Изменить" onAction="#handleEdit"
+        <Button fx:id="editBtn" text="✏ Изменить" onAction="#handleEdit"
                 style="-fx-background-color:#f39c12;-fx-text-fill:white;
                        -fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 14 6 14;"/>
-        <Button text="🗑 Удалить" onAction="#handleDelete"
+        <Button fx:id="deleteBtn" text="🗑 Удалить" onAction="#handleDelete"
                 style="-fx-background-color:#e74c3c;-fx-text-fill:white;
                        -fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 14 6 14;"/>
         <Region HBox.hgrow="ALWAYS"/>
@@ -30,21 +28,36 @@
                        -fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 12 6 12;"/>
     </HBox>
 
+    <!-- Фильтры по цене -->
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <Label text="Цена закупки (макс.) от:"/>
+        <TextField fx:id="pricePurchaseFrom" prefWidth="80"/>
+        <Label text="до:"/>
+        <TextField fx:id="pricePurchaseTo" prefWidth="80"/>
+        <Label text="Цена продажи (мин.) от:"/>
+        <TextField fx:id="priceSellingFrom" prefWidth="80"/>
+        <Label text="до:"/>
+        <TextField fx:id="priceSellingTo" prefWidth="80"/>
+        <Button text="Применить" onAction="#applyPriceFilter"
+                style="-fx-background-color:#2980b9;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:4 12;"/>
+        <Button text="Сбросить" onAction="#resetPriceFilter"
+                style="-fx-background-color:#95a5a6;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:4 12;"/>
+    </HBox>
+
     <!-- Таблица -->
     <TableView fx:id="productsTable" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn fx:id="colId"       text="ID"         prefWidth="50"/>
-            <TableColumn fx:id="colArticle"  text="Артикул"    prefWidth="110"/>
-            <TableColumn fx:id="colName"     text="Наименование" prefWidth="240"/>
-            <TableColumn fx:id="colCategory" text="Категория"  prefWidth="130"/>
-            <TableColumn fx:id="colUnit"     text="Ед. изм."   prefWidth="80"/>
-            <TableColumn fx:id="colPurchase" text="Цена закуп." prefWidth="110"/>
-            <TableColumn fx:id="colSelling"  text="Цена прод." prefWidth="110"/>
-            <TableColumn fx:id="colMinStock" text="Мин. остаток" prefWidth="110"/>
+            <TableColumn fx:id="colId"       text="ID"              prefWidth="50"/>
+            <TableColumn fx:id="colArticle"  text="Артикул"         prefWidth="110"/>
+            <TableColumn fx:id="colName"     text="Наименование"    prefWidth="240"/>
+            <TableColumn fx:id="colCategory" text="Категория"       prefWidth="130"/>
+            <TableColumn fx:id="colUnit"     text="Ед. изм."        prefWidth="80"/>
+            <TableColumn fx:id="colPurchase" text="Макс. цена закуп." prefWidth="130"/>
+            <TableColumn fx:id="colSelling"  text="Мин. цена прод." prefWidth="130"/>
+            <TableColumn fx:id="colMinStock" text="Мин. остаток"    prefWidth="110"/>
         </columns>
         <placeholder><Label text="Нет данных. Нажмите «Обновить»"/></placeholder>
     </TableView>
 
-    <!-- Строка статуса -->
     <Label fx:id="statusLabel" text="" style="-fx-text-fill: #7f8c8d; -fx-font-size: 11px;"/>
 </VBox>

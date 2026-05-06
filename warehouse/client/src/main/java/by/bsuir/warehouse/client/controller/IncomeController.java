@@ -13,6 +13,8 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -21,18 +23,12 @@ import java.util.Optional;
 
 public class IncomeController {
 
-    @FXML private ComboBox<Warehouse>                     warehouseCombo;
-    @FXML private ComboBox<Supplier>                      supplierCombo;
-    @FXML private TextField                               commentField;
-    @FXML private TableView<DocumentItem>                 itemsTable;
-    @FXML private TableColumn<DocumentItem, String>       colArticle;
-    @FXML private TableColumn<DocumentItem, String>       colProduct;
-    @FXML private TableColumn<DocumentItem, String>       colUnit;
-    @FXML private TableColumn<DocumentItem, String>       colQty;
-    @FXML private TableColumn<DocumentItem, String>       colPrice;
-    @FXML private TableColumn<DocumentItem, String>       colTotal;
-    @FXML private Label                                   totalLabel;
-    @FXML private Label                                   statusLabel;
+    @FXML private ComboBox<Warehouse> warehouseCombo;
+    @FXML private ComboBox<Supplier>  supplierCombo;
+    @FXML private TextField           commentField;
+    @FXML private TableView<DocumentItem> itemsTable;
+    @FXML private TableColumn<DocumentItem, String> colArticle, colProduct, colUnit, colQty, colPrice, colTotal;
+    @FXML private Label totalLabel, statusLabel;
 
     private final ObservableList<DocumentItem> items = FXCollections.observableArrayList();
     private List<Product> allProducts = new ArrayList<>();
@@ -66,7 +62,7 @@ public class IncomeController {
     }
 
     private void loadReferenceData() {
-        Thread t = new Thread(() -> {
+        new Thread(() -> {
             try {
                 ClientContext ctx = ClientContext.getInstance();
                 Response wh  = ctx.send(new Request.Builder(Action.GET_ALL_WAREHOUSES).build());
@@ -84,17 +80,12 @@ public class IncomeController {
             } catch (Exception e) {
                 Platform.runLater(() -> statusLabel.setText("Ошибка загрузки справочников: " + e.getMessage()));
             }
-        });
-        t.setDaemon(true);
-        t.start();
+        }).start();
     }
 
     @FXML
     public void addItem() {
-        if (allProducts.isEmpty()) {
-            statusLabel.setText("Справочник товаров не загружен. Подождите...");
-            return;
-        }
+        if (allProducts.isEmpty()) { statusLabel.setText("Справочник товаров не загружен. Подождите..."); return; }
         showItemDialog(null).ifPresent(item -> {
             items.add(item);
             updateTotal();
@@ -110,17 +101,28 @@ public class IncomeController {
     @FXML
     public void handleSubmit() {
         Warehouse wh = warehouseCombo.getValue();
-        if (wh == null) { statusLabel.setText("Выберите склад"); return; }
-        if (items.isEmpty()) { statusLabel.setText("Добавьте хотя бы одну позицию"); return; }
+        if (wh == null) {
+            showAlert("Не выбран склад", "Пожалуйста, выберите склад назначения.");
+            return;
+        }
+        Supplier supplier = supplierCombo.getValue();
+        if (supplier == null) {
+            showAlert("Не выбран поставщик", "Пожалуйста, выберите поставщика для оформления приходной накладной.");
+            return;
+        }
+        if (items.isEmpty()) {
+            showAlert("Пустая накладная", "Добавьте хотя бы одну позицию.");
+            return;
+        }
 
         Document doc = new Document(DocumentType.INCOME, "AUTO", null);
         doc.setWarehouseTo(wh);
-        doc.setSupplier(supplierCombo.getValue());
+        doc.setSupplier(supplier);
         doc.setComment(commentField.getText().trim());
         doc.setItems(new ArrayList<>(items));
 
         statusLabel.setText("Оформление...");
-        Thread t = new Thread(() -> {
+        new Thread(() -> {
             try {
                 Response resp = ClientContext.getInstance()
                         .send(new Request.Builder(Action.PROCESS_INCOME).payload(doc).build());
@@ -140,9 +142,7 @@ public class IncomeController {
             } catch (Exception e) {
                 Platform.runLater(() -> statusLabel.setText("Ошибка: " + e.getMessage()));
             }
-        });
-        t.setDaemon(true);
-        t.start();
+        }).start();
     }
 
     private void updateTotal() {
@@ -152,6 +152,9 @@ public class IncomeController {
         totalLabel.setText("Итого: " + total.setScale(2, java.math.RoundingMode.HALF_UP) + " руб.");
     }
 
+    /**
+     * Улучшенный диалог добавления позиции с валидацией цены и красивым оформлением.
+     */
     private Optional<DocumentItem> showItemDialog(DocumentItem existing) {
         Dialog<DocumentItem> dialog = new Dialog<>();
         dialog.setTitle("Добавить позицию");
@@ -161,55 +164,97 @@ public class IncomeController {
         dialog.getDialogPane().getButtonTypes().addAll(addBtn, ButtonType.CANCEL);
 
         GridPane grid = new GridPane();
-        grid.setHgap(10); grid.setVgap(10);
-        grid.setPadding(new Insets(16));
+        grid.setHgap(12);
+        grid.setVgap(12);
+        grid.setPadding(new Insets(20));
 
         ComboBox<Product> productCombo = new ComboBox<>();
         productCombo.getItems().setAll(allProducts);
         productCombo.setPromptText("Выберите товар");
-        productCombo.setPrefWidth(300);
+        productCombo.setPrefWidth(320);
         productCombo.setConverter(new javafx.util.StringConverter<>() {
             public String toString(Product p) { return p == null ? "" : "[" + p.getArticle() + "] " + p.getName(); }
             public Product fromString(String s) { return null; }
         });
 
         TextField qtyField   = new TextField("1");
+        qtyField.setPrefWidth(120);
         TextField priceField = new TextField("");
+        priceField.setPrefWidth(120);
+        Label maxPriceLabel = new Label("Макс. цена закупки: —");
+        maxPriceLabel.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 12px;");
 
-        // Автозаполнение цены из карточки товара
         productCombo.setOnAction(e -> {
             Product p = productCombo.getValue();
-            if (p != null && p.getPurchasePrice() != null)
-                priceField.setText(p.getPurchasePrice().toPlainString());
+            if (p != null) {
+                if (p.getPurchasePrice() != null) {
+                    priceField.setText(p.getPurchasePrice().toPlainString());
+                    maxPriceLabel.setText("Макс. цена закупки: " + p.getPurchasePrice() + " руб.");
+                } else {
+                    priceField.setText("");
+                    maxPriceLabel.setText("Макс. цена закупки: не задана");
+                }
+            }
         });
 
-        grid.add(new Label("Товар*:"),       0, 0); grid.add(productCombo, 1, 0);
-        grid.add(new Label("Количество*:"),  0, 1); grid.add(qtyField,     1, 1);
-        grid.add(new Label("Цена за ед.:"),  0, 2); grid.add(priceField,   1, 2);
+        grid.add(new Label("Товар*:"),       0, 0);
+        grid.add(productCombo, 1, 0);
+        grid.add(new Label("Количество*:"),  0, 1);
+        grid.add(qtyField,     1, 1);
+        grid.add(new Label("Цена закупки:"), 0, 2);
+        grid.add(priceField,   1, 2);
+        grid.add(maxPriceLabel, 0, 3, 2, 1);
 
-        Label err = new Label("");
-        err.setStyle("-fx-text-fill:red;");
-        grid.add(err, 0, 3, 2, 1);
+        // Стилизация лейблов
+        grid.getChildren().stream()
+                .filter(node -> node instanceof Label)
+                .map(node -> (Label) node)
+                .forEach(label -> label.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;"));
+
         dialog.getDialogPane().setContent(grid);
+        Platform.runLater(productCombo::requestFocus);
+
+        // Делаем кнопку "Добавить" недоступной, пока не выбран товар
+        Button addButton = (Button) dialog.getDialogPane().lookupButton(addBtn);
+        addButton.setDisable(true);
+        addButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;");
+
+        productCombo.valueProperty().addListener((obs, old, val) -> {
+            addButton.setDisable(val == null);
+        });
 
         dialog.setResultConverter(btn -> {
             if (btn != addBtn) return null;
             Product p = productCombo.getValue();
-            if (p == null) { err.setText("Выберите товар"); return null; }
             try {
                 BigDecimal qty = new BigDecimal(qtyField.getText().trim());
                 if (qty.compareTo(BigDecimal.ZERO) <= 0) {
-                    err.setText("Количество должно быть больше 0"); return null;
+                    showAlert("Ошибка количества", "Количество должно быть больше 0");
+                    return null;
                 }
-                BigDecimal price = priceField.getText().trim().isEmpty()
-                        ? null : new BigDecimal(priceField.getText().trim());
-                DocumentItem item = new DocumentItem(p, qty, price);
-                return item;
+                String priceText = priceField.getText().trim();
+                BigDecimal price = priceText.isEmpty() ? null : new BigDecimal(priceText);
+                if (price != null && p.getPurchasePrice() != null &&
+                        price.compareTo(p.getPurchasePrice()) > 0) {
+                    showAlert("Ошибка цены",
+                            "Цена закупки превышает максимальную закупочную цену товара (" + p.getPurchasePrice() + ")");
+                    return null;
+                }
+                return new DocumentItem(p, qty, price);
             } catch (NumberFormatException e) {
-                err.setText("Неверный формат числа"); return null;
+                showAlert("Ошибка формата", "Некорректное число в поле количества или цены");
+                return null;
             }
         });
+
         return dialog.showAndWait();
+    }
+
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING, message, ButtonType.OK);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.showAndWait();
     }
 
     private void showInfo(String msg) {

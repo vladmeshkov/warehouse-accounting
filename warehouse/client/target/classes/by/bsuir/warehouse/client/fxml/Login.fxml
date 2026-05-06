@@ -7,17 +7,19 @@
            styleClass="root"
            stylesheets="@../css/login-style.css">
     <VBox styleClass="card" alignment="CENTER" spacing="16">
-        <Label text="Складской учёт" styleClass="title"/>
-        <Label text="Вход в систему" styleClass="subtitle"/>
-
-        <VBox spacing="4" alignment="CENTER_LEFT">
-            <Label text="Логин" styleClass="input-label"/>
-            <TextField fx:id="usernameField" promptText="Введите логин"/>
+        <VBox spacing="6" alignment="CENTER">
+            <Label text="📦 Складской учёт" styleClass="title"/>
+            <Label text="Войдите в свою учётную запись" styleClass="subtitle"/>
         </VBox>
 
-        <VBox spacing="4" alignment="CENTER_LEFT">
+        <VBox spacing="4" alignment="CENTER_LEFT" maxWidth="Infinity">
+            <Label text="Логин" styleClass="input-label"/>
+            <TextField fx:id="usernameField" promptText="Введите логин" maxWidth="Infinity"/>
+        </VBox>
+
+        <VBox spacing="4" alignment="CENTER_LEFT" maxWidth="Infinity">
             <Label text="Пароль" styleClass="input-label"/>
-            <PasswordField fx:id="passwordField" promptText="Введите пароль"/>
+            <PasswordField fx:id="passwordField" promptText="Введите пароль" maxWidth="Infinity"/>
         </VBox>
 
         <Label fx:id="errorLabel" text="" styleClass="error-label" wrapText="true"/>

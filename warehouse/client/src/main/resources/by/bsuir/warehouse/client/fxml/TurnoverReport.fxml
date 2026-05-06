@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="by.bsuir.warehouse.client.controller.TurnoverReportController"
+      spacing="12" style="-fx-background-color: #f4f6fb;">
+    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+    <Label text="📊 Отчёт по оборачиваемости товаров" styleClass="section-title"/>
+    <Label text="Данные за последние 30 дней" style="-fx-text-fill: #7f8c8d; -fx-font-size: 13px;"/>
+    <HBox styleClass="toolbar" spacing="10" alignment="CENTER_LEFT">
+        <Button fx:id="saveButton" text="💾 Сохранить в TXT" onAction="#saveToFile"
+                style="-fx-background-color:#27ae60;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 14 6 14;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Обновить" onAction="#loadReport"
+                style="-fx-background-color:#2980b9;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 12 6 12;"/>
+    </HBox>
+    <TableView fx:id="reportTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colArticle"  text="Артикул"       prefWidth="100"/>
+            <TableColumn fx:id="colProduct"  text="Товар"         prefWidth="250"/>
+            <TableColumn fx:id="colUnit"     text="Ед.изм."       prefWidth="70"/>
+            <TableColumn fx:id="colIncome"   text="Приход"        prefWidth="100"/>
+            <TableColumn fx:id="colOutcome"  text="Расход"        prefWidth="100"/>
+            <TableColumn fx:id="colStock"    text="Остаток"       prefWidth="100"/>
+            <TableColumn fx:id="colTurnover" text="Оборачиваемость" prefWidth="120"/>
+        </columns>
+        <placeholder><Label text="Нет данных"/></placeholder>
+    </TableView>
+    <Label fx:id="statusLabel" text="" style="-fx-text-fill:#7f8c8d;-fx-font-size:11px;"/>
+</VBox>

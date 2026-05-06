@@ -6,6 +6,7 @@ import by.bsuir.warehouse.common.model.User;
 import by.bsuir.warehouse.common.protocol.Action;
 import by.bsuir.warehouse.common.protocol.Request;
 import by.bsuir.warehouse.common.protocol.Response;
+import by.bsuir.warehouse.common.util.PasswordUtil;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -71,6 +72,70 @@ public class UsersController {
                 });
             } catch (Exception e) {
                 Platform.runLater(() -> statusLabel.setText("Ошибка: " + e.getMessage()));
+            }
+        }).start();
+    }
+
+    @FXML
+    public void showPending() {
+        new Thread(() -> {
+            try {
+                Response r = ClientContext.getInstance()
+                        .send(new Request.Builder(Action.GET_PENDING_USERS).build());
+                Platform.runLater(() -> {
+                    if (r.isSuccess() && r.getData() instanceof List<?> l) {
+                        list.setAll((List<User>) l);
+                        statusLabel.setText("Заявок на регистрацию: " + list.size());
+                    }
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> statusLabel.setText("Ошибка: " + e.getMessage()));
+            }
+        }).start();
+    }
+
+    @FXML
+    public void approveSelected() {
+        User sel = usersTable.getSelectionModel().getSelectedItem();
+        if (sel == null) { statusLabel.setText("Выберите пользователя"); return; }
+        new Thread(() -> {
+            try {
+                Response r = ClientContext.getInstance()
+                        .send(new Request.Builder(Action.APPROVE_USER)
+                                .param("id", String.valueOf(sel.getId())).build());
+                Platform.runLater(() -> {
+                    if (r.isSuccess()) {
+                        loadData();
+                        statusLabel.setText("Пользователь одобрен");
+                    } else {
+                        new Alert(Alert.AlertType.ERROR, r.getMessage()).showAndWait();
+                    }
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> new Alert(Alert.AlertType.ERROR, e.getMessage()).showAndWait());
+            }
+        }).start();
+    }
+
+    @FXML
+    public void rejectSelected() {
+        User sel = usersTable.getSelectionModel().getSelectedItem();
+        if (sel == null) { statusLabel.setText("Выберите пользователя"); return; }
+        new Thread(() -> {
+            try {
+                Response r = ClientContext.getInstance()
+                        .send(new Request.Builder(Action.REJECT_USER)
+                                .param("id", String.valueOf(sel.getId())).build());
+                Platform.runLater(() -> {
+                    if (r.isSuccess()) {
+                        loadData();
+                        statusLabel.setText("Заявка отклонена");
+                    } else {
+                        new Alert(Alert.AlertType.ERROR, r.getMessage()).showAndWait();
+                    }
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> new Alert(Alert.AlertType.ERROR, e.getMessage()).showAndWait());
             }
         }).start();
     }
@@ -213,12 +278,29 @@ public class UsersController {
             if (btn != save || fu.getText().trim().isEmpty() || rc.getValue() == null) return null;
             if (e == null && fpw.getText().isEmpty()) return null;
             User u = new User();
-            u.setUsername(fu.getText().trim()); u.setFullName(ff.getText().trim());
-            u.setRole(rc.getValue()); u.setPhone(fp.getText().trim()); u.setEmail(fe.getText().trim());
+            u.setUsername(fu.getText().trim());
+            u.setFullName(ff.getText().trim());
+            u.setRole(rc.getValue());
+            u.setPhone(fp.getText().trim());
+            u.setEmail(fe.getText().trim());
             u.setActive(true);
-            if (!fpw.getText().isEmpty())
-                u.setPasswordHash(by.bsuir.warehouse.common.util.PasswordUtil.hash(fpw.getText()));
-            else if (e != null) u.setPasswordHash(e.getPasswordHash());
+
+            // Валидация пароля, если введён новый
+            if (!fpw.getText().isEmpty()) {
+                String password = fpw.getText();
+                String passwordError = PasswordUtil.validatePassword(password);
+                if (passwordError != null) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING, passwordError, ButtonType.OK);
+                    alert.setHeaderText("Слабый пароль");
+                    alert.showAndWait();
+                    return null;
+                }
+                u.setPasswordHash(PasswordUtil.hash(password));
+            } else if (e != null) {
+                // Оставляем старый хеш, если пароль не меняли
+                u.setPasswordHash(e.getPasswordHash());
+            }
+
             return u;
         });
         return d.showAndWait();

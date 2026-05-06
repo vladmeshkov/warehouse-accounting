@@ -57,7 +57,6 @@ public class ProfileController {
         phoneField.setText(u.getPhone() != null ? u.getPhone() : "");
         emailField.setText(u.getEmail() != null ? u.getEmail() : "");
 
-        // Аватар – первая буква имени или логина
         String initials = (u.getFullName() != null && !u.getFullName().isEmpty())
                 ? u.getFullName().substring(0, 1).toUpperCase()
                 : u.getUsername().substring(0, 1).toUpperCase();
@@ -109,39 +108,78 @@ public class ProfileController {
     public void handleChangePassword() {
         Dialog<String> dialog = new Dialog<>();
         dialog.setTitle("Смена пароля");
-        dialog.setHeaderText("Введите новый пароль");
+        dialog.setHeaderText("Введите старый и новый пароль");
 
         ButtonType okButton = new ButtonType("Сменить", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(okButton, ButtonType.CANCEL);
 
         GridPane grid = new GridPane();
-        grid.setHgap(10); grid.setVgap(10);
+        grid.setHgap(10);
+        grid.setVgap(10);
+        PasswordField oldPass = new PasswordField();
         PasswordField newPass = new PasswordField();
         PasswordField confirmPass = new PasswordField();
-        grid.add(new Label("Новый пароль:"), 0, 0);
-        grid.add(newPass, 1, 0);
-        grid.add(new Label("Подтверждение:"), 0, 1);
-        grid.add(confirmPass, 1, 1);
+        grid.add(new Label("Старый пароль:"), 0, 0);
+        grid.add(oldPass, 1, 0);
+        grid.add(new Label("Новый пароль:"), 0, 1);
+        grid.add(newPass, 1, 1);
+        grid.add(new Label("Подтверждение:"), 0, 2);
+        grid.add(confirmPass, 1, 2);
         dialog.getDialogPane().setContent(grid);
+
+        Button okBtn = (Button) dialog.getDialogPane().lookupButton(okButton);
+        okBtn.setDisable(true);
+        newPass.textProperty().addListener((obs, o, n) ->
+                okBtn.setDisable(oldPass.getText().isEmpty() || newPass.getText().isEmpty() || confirmPass.getText().isEmpty())
+        );
 
         dialog.setResultConverter(btn -> {
             if (btn == okButton) {
-                String p1 = newPass.getText();
-                String p2 = confirmPass.getText();
-                if (p1.isEmpty() || p2.isEmpty()) return null;
-                if (!p1.equals(p2)) {
-                    messageLabel.setText("Пароли не совпадают");
+                String oldPwd = oldPass.getText();
+                String newPwd = newPass.getText();
+                String confPwd = confirmPass.getText();
+
+                // Новый пароль не должен совпадать со старым → Alert
+                if (newPwd.equals(oldPwd)) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING,
+                            "Новый пароль не должен совпадать со старым", ButtonType.OK);
+                    alert.setHeaderText(null);
+                    alert.showAndWait();
                     return null;
                 }
-                return p1;
+
+                if (!newPwd.equals(confPwd)) {
+                    messageLabel.setText("Новые пароли не совпадают");
+                    return null;
+                }
+                String validationError = PasswordUtil.validatePassword(newPwd);
+                if (validationError != null) {
+                    messageLabel.setText(validationError);
+                    return null;
+                }
+
+                try {
+                    Response verifyResp = ClientContext.getInstance()
+                            .send(new Request.Builder(Action.VERIFY_PASSWORD)
+                                    .param("password", oldPwd).build());
+                    if (!verifyResp.isSuccess()) {
+                        messageLabel.setText("Неверный старый пароль");
+                        return null;
+                    }
+                } catch (Exception e) {
+                    messageLabel.setText("Ошибка проверки пароля");
+                    return null;
+                }
+
+                return newPwd;
             }
             return null;
         });
 
-        dialog.showAndWait().ifPresent(password -> {
+        dialog.showAndWait().ifPresent(newPassword -> {
             User updated = new User();
             updated.setId(currentProfile.getUser().getId());
-            updated.setPasswordHash(PasswordUtil.hash(password));
+            updated.setPasswordHash(PasswordUtil.hash(newPassword));
 
             new Thread(() -> {
                 try {

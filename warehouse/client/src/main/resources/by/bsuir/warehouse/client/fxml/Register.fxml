@@ -6,30 +6,44 @@
            fx:controller="by.bsuir.warehouse.client.controller.RegisterController"
            styleClass="root"
            stylesheets="@../css/login-style.css">
-    <VBox styleClass="card" alignment="CENTER" spacing="14">
-        <Label text="Регистрация" styleClass="title"/>
-        <Label text="Заявка будет рассмотрена администратором" styleClass="subtitle" wrapText="true"/>
+    <VBox styleClass="card-wide" alignment="CENTER" spacing="12">
+        <VBox spacing="6" alignment="CENTER">
+            <Label text="📝 Регистрация" styleClass="title"/>
+            <Label text="Заявка будет рассмотрена администратором" styleClass="subtitle" wrapText="true"/>
+        </VBox>
 
         <VBox spacing="4" alignment="CENTER_LEFT">
-            <Label text="Логин" styleClass="input-label"/>
-            <TextField fx:id="usernameField" promptText="Придумайте логин"/>
+            <Label text="Логин*" styleClass="input-label"/>
+            <TextField fx:id="usernameField" promptText="Придумайте логин" styleClass="wide-field"/>
         </VBox>
         <VBox spacing="4" alignment="CENTER_LEFT">
-            <Label text="Пароль" styleClass="input-label"/>
-            <PasswordField fx:id="passwordField" promptText="Придумайте пароль"/>
+            <Label text="Пароль*" styleClass="input-label"/>
+            <PasswordField fx:id="passwordField" promptText="Минимум 8 символов, A-Z, a-z, 0-9, спецсимволы" styleClass="wide-field"/>
         </VBox>
         <VBox spacing="4" alignment="CENTER_LEFT">
-            <Label text="Повторите пароль" styleClass="input-label"/>
-            <PasswordField fx:id="confirmPasswordField" promptText="Повторите пароль"/>
+            <Label text="Повторите пароль*" styleClass="input-label"/>
+            <PasswordField fx:id="confirmPasswordField" promptText="Повторите пароль" styleClass="wide-field"/>
         </VBox>
         <VBox spacing="4" alignment="CENTER_LEFT">
             <Label text="Роль" styleClass="input-label"/>
-            <ComboBox fx:id="roleCombo" promptText="Выберите роль"/>
+            <ComboBox fx:id="roleCombo" promptText="Выберите роль" styleClass="wide-field"/>
         </VBox>
         <VBox spacing="4" alignment="CENTER_LEFT">
-            <Label text="ФИО (необязательно)" styleClass="input-label"/>
-            <TextField fx:id="fullNameField" promptText="Иванов Иван Иванович"/>
+            <Label text="ФИО*" styleClass="input-label"/>
+            <TextField fx:id="fullNameField" promptText="Иванов Иван Иванович (русские буквы, пробелы, дефисы)" styleClass="wide-field"/>
         </VBox>
+
+        <!-- Телефон и email в одной строке -->
+        <HBox spacing="10">
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Телефон*" styleClass="input-label"/>
+                <TextField fx:id="phoneField" promptText="+375291234567" styleClass="wide-field"/>
+            </VBox>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Email" styleClass="input-label"/>
+                <TextField fx:id="emailField" promptText="example@mail.ru" styleClass="wide-field"/>
+            </VBox>
+        </HBox>
 
         <Label fx:id="errorLabel" text="" styleClass="error-label" wrapText="true"/>
 

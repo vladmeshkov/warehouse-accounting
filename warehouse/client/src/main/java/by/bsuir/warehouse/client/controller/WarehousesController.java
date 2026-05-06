@@ -1,6 +1,7 @@
 package by.bsuir.warehouse.client.controller;
 
 import by.bsuir.warehouse.client.network.ClientContext;
+import by.bsuir.warehouse.common.model.Role;
 import by.bsuir.warehouse.common.model.Warehouse;
 import by.bsuir.warehouse.common.protocol.Action;
 import by.bsuir.warehouse.common.protocol.Request;
@@ -26,6 +27,8 @@ public class WarehousesController {
     @FXML private TableColumn<Warehouse, String>     colAddress;
     @FXML private Label                              statusLabel;
 
+    @FXML private Button addBtn, editBtn, deleteBtn;
+
     private final ObservableList<Warehouse> warehouses = FXCollections.observableArrayList();
 
     @FXML
@@ -35,6 +38,16 @@ public class WarehousesController {
         colAddress.setCellValueFactory(new PropertyValueFactory<>("address"));
         warehousesTable.setItems(warehouses);
         warehousesTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        boolean isAdmin = ClientContext.getInstance().getCurrentUser() != null
+                && Role.ADMIN.equals(ClientContext.getInstance().getCurrentUser().getRole().getRoleName());
+        addBtn.setVisible(isAdmin);
+        addBtn.setManaged(isAdmin);
+        editBtn.setVisible(isAdmin);
+        editBtn.setManaged(isAdmin);
+        deleteBtn.setVisible(isAdmin);
+        deleteBtn.setManaged(isAdmin);
+
         loadData();
     }
 
@@ -68,7 +81,7 @@ public class WarehousesController {
             } catch (IOException e) {
                 Platform.runLater(() -> showError("Ошибка соединения: " + e.getMessage()));
             }
-        }) {{ setDaemon(true); start(); }});
+        }).start());
     }
 
     @FXML
@@ -85,7 +98,7 @@ public class WarehousesController {
                 } catch (IOException e) {
                     Platform.runLater(() -> showError("Ошибка соединения: " + e.getMessage()));
                 }
-            }) {{ setDaemon(true); start(); }};
+            }).start();
         });
     }
 
@@ -104,7 +117,7 @@ public class WarehousesController {
             } catch (IOException e) {
                 Platform.runLater(() -> showError("Ошибка соединения: " + e.getMessage()));
             }
-        }) {{ setDaemon(true); start(); }};
+        }).start();
     }
 
     private Optional<Warehouse> showDialog(Warehouse existing) {

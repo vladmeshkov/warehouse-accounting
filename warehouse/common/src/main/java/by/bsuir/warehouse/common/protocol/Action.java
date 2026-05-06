@@ -18,9 +18,11 @@ public enum Action {
     DELETE_USER,
     GET_ALL_ROLES,
 
-    // ── Личный кабинет ──────────────────────────────────────────────────
     GET_MY_PROFILE,
     UPDATE_MY_PROFILE,
+
+    // Проверка старого пароля при смене
+    VERIFY_PASSWORD,
 
     GET_ALL_PRODUCTS,
     GET_PRODUCT_BY_ID,
@@ -61,6 +63,9 @@ public enum Action {
     GET_REPORT_TURNOVER,
     GET_REPORT_DEFICIT,
     EXPORT_DOCUMENTS_CSV,
+    GET_SALES_REPORT,
+    GET_ANALYTICS,
 
-    GET_AUDIT_LOG
+    GET_AUDIT_LOG,
+    BACKUP_DATABASE
 }

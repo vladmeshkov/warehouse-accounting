@@ -193,3 +193,19 @@
     -fx-text-fill: white;
     -fx-font-size: 15px;
 }
+/* Скроллируемая боковая панель */
+.nav-panel .scroll-bar {
+    -fx-background-color: transparent;
+}
+.nav-panel .scroll-bar .thumb {
+    -fx-background-color: #34495e;
+    -fx-background-radius: 4;
+}
+.nav-panel .scroll-bar .thumb:hover {
+    -fx-background-color: #4a6a8a;
+}
+.nav-panel .scroll-bar .increment-button,
+.nav-panel .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}

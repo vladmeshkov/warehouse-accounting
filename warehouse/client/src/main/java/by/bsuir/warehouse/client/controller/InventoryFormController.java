@@ -1,10 +1,7 @@
 package by.bsuir.warehouse.client.controller;
 
 import by.bsuir.warehouse.client.network.ClientContext;
-import by.bsuir.warehouse.common.model.InventoryRequest;
-import by.bsuir.warehouse.common.model.InventoryResult;
-import by.bsuir.warehouse.common.model.Stock;
-import by.bsuir.warehouse.common.model.Warehouse;
+import by.bsuir.warehouse.common.model.*;
 import by.bsuir.warehouse.common.protocol.Action;
 import by.bsuir.warehouse.common.protocol.Request;
 import by.bsuir.warehouse.common.protocol.Response;
@@ -15,6 +12,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.TextFieldTableCell;
 
 import java.util.*;
 
@@ -45,6 +43,7 @@ public class InventoryFormController {
     @FXML private Label statusLabel;
 
     private final ObservableList<InventoryRow> rows = FXCollections.observableArrayList();
+    private final Map<Integer, TextField> actualFields = new HashMap<>();   // productId → поле ввода
 
     @FXML
     public void initialize() {
@@ -66,12 +65,33 @@ public class InventoryFormController {
             }
             @Override protected void updateItem(Integer v, boolean empty) {
                 super.updateItem(v, empty);
-                if (empty) { setGraphic(null); } else { tf.setText(v != null ? v.toString() : "0"); setGraphic(tf); }
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    tf.setText(v != null ? v.toString() : "0");
+                    setGraphic(tf);
+                    // Сохраняем поле для подсветки
+                    InventoryRow row = getTableView().getItems().get(getIndex());
+                    actualFields.put(row.productId, tf);
+                }
             }
             @Override public void commitEdit(Integer v) {
+                if (v != null && v < 0) {
+                    // Пытались ввести отрицательное – блокируем
+                    Alert alert = new Alert(Alert.AlertType.WARNING,
+                            "Остаток не может быть отрицательным. Введите 0 или положительное число.",
+                            ButtonType.OK);
+                    alert.setHeaderText("Некорректное значение");
+                    alert.showAndWait();
+                    // Возвращаем прежнее значение
+                    InventoryRow row = getTableView().getItems().get(getIndex());
+                    tf.setText(String.valueOf(row.actual));
+                    return;
+                }
                 super.commitEdit(v);
                 InventoryRow row = getTableView().getItems().get(getIndex());
-                row.actual = v; row.diff = v - row.accounting;
+                row.actual = v;
+                row.diff = v - row.accounting;
                 inventoryTable.refresh();
             }
             private int parse(String s) {
@@ -82,7 +102,6 @@ public class InventoryFormController {
         colActual.setEditable(true);
         inventoryTable.setEditable(true);
         inventoryTable.setItems(rows);
-        inventoryTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         new Thread(() -> {
             try {
@@ -99,7 +118,13 @@ public class InventoryFormController {
     @FXML
     public void loadStockForWarehouse() {
         Warehouse wh = warehouseCombo.getValue();
-        if (wh == null) return;
+        if (wh == null) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION,
+                    "Выберите склад для проведения инвентаризации", ButtonType.OK);
+            alert.setHeaderText(null);
+            alert.showAndWait();
+            return;
+        }
         new Thread(() -> {
             try {
                 Response r = ClientContext.getInstance().send(
@@ -107,6 +132,7 @@ public class InventoryFormController {
                                 .param("warehouseId", wh.getId()).build());
                 Platform.runLater(() -> {
                     rows.clear();
+                    actualFields.clear();
                     if (r.isSuccess() && r.getData() instanceof List<?> l)
                         for (Object o : l) rows.add(new InventoryRow((Stock) o));
                     statusLabel.setText("Загружено: " + rows.size() + " позиций");
@@ -122,29 +148,43 @@ public class InventoryFormController {
         if (warehouseCombo.getValue() == null) { statusLabel.setText("Выберите склад"); return; }
         if (rows.isEmpty()) { statusLabel.setText("Нет позиций"); return; }
 
+        // Проверка на отрицательные значения и подсветка
+        boolean hasNegative = false;
+        for (InventoryRow row : rows) {
+            if (row.actual < 0) {
+                hasNegative = true;
+                TextField tf = actualFields.get(row.productId);
+                if (tf != null) {
+                    tf.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+                }
+            }
+        }
+
+        if (hasNegative) {
+            Alert alert = new Alert(Alert.AlertType.WARNING,
+                    "Обнаружены отрицательные остатки.\nОни выделены красной рамкой.\n" +
+                            "Скопируйте актуальное количество и повторите попытку.",
+                    ButtonType.OK);
+            alert.setHeaderText("Ошибка в данных инвентаризации");
+            alert.showAndWait();
+            return;
+        }
+
         Map<Integer, Integer> actual = new HashMap<>();
         for (InventoryRow r : rows) actual.put(r.productId, r.actual);
 
-        InventoryRequest req = new InventoryRequest(warehouseCombo.getValue(), actual);
+        InventoryRequest reqPayload = new InventoryRequest(warehouseCombo.getValue(), actual);
 
         new Thread(() -> {
             try {
                 Response r = ClientContext.getInstance().send(
-                        new Request.Builder(Action.PROCESS_INVENTORY).payload(req).build());
+                        new Request.Builder(Action.PROCESS_INVENTORY).payload(reqPayload).build());
                 Platform.runLater(() -> {
                     if (r.isSuccess()) {
-                        String msg;
-                        if (r.getData() instanceof InventoryResult res) {
-                            msg = "Инвентаризация проведена.\nПроверено: " + res.getTotalChecked()
-                                    + "\nРасхождений: " + res.getTotalDiscrepancies();
-                            if (res.hasDiscrepancies()) {
-                                StringBuilder sb = new StringBuilder(msg);
-                                sb.append("\nИзлишки: ").append(res.getSurpluses().size())
-                                        .append("\nНедостачи: ").append(res.getShortages().size());
-                                msg = sb.toString();
-                            }
-                        } else {
-                            msg = r.getMessage();
+                        String msg = r.getMessage();
+                        if (r.getData() != null) {
+                            // Пытаемся извлечь детали
+                            msg += "\n" + r.getData().toString();
                         }
                         new Alert(Alert.AlertType.INFORMATION, msg, ButtonType.OK).showAndWait();
                         statusLabel.setText("");

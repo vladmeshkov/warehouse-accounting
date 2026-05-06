@@ -4,11 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-/**
- * Конфигурация сервера (паттерн Singleton).
- * Загружает параметры из config.properties один раз при старте.
- * Изменение параметров не требует перекомпиляции — только правки файла.
- */
 public final class ServerConfig {
 
     private static volatile ServerConfig instance;
@@ -18,8 +13,7 @@ public final class ServerConfig {
         try (InputStream is = getClass().getClassLoader()
                 .getResourceAsStream("config.properties")) {
             if (is == null) {
-                throw new RuntimeException(
-                        "config.properties не найден в classpath");
+                throw new RuntimeException("config.properties не найден в classpath");
             }
             props.load(is);
         } catch (IOException e) {
@@ -38,8 +32,6 @@ public final class ServerConfig {
         return instance;
     }
 
-    // ── Сетевые параметры ─────────────────────────────────────────────────
-
     public int getServerPort() {
         return Integer.parseInt(props.getProperty("server.port", "8888"));
     }
@@ -48,13 +40,14 @@ public final class ServerConfig {
         return Integer.parseInt(props.getProperty("server.thread.pool.size", "20"));
     }
 
-    // ── База данных ───────────────────────────────────────────────────────
-
     public String getDbUrl()      { return props.getProperty("db.url"); }
     public String getDbUsername() { return props.getProperty("db.username"); }
     public String getDbPassword() { return props.getProperty("db.password"); }
 
-    // ── Прогнозирование ───────────────────────────────────────────────────
+    // Новый метод — путь к mysqldump
+    public String getMysqldumpPath() {
+        return props.getProperty("db.mysqldump.path", "mysqldump");
+    }
 
     public double getForecastAlpha() {
         return Double.parseDouble(props.getProperty("forecast.alpha", "0.3"));
@@ -75,8 +68,6 @@ public final class ServerConfig {
     public int getForecastScheduleHour() {
         return Integer.parseInt(props.getProperty("forecast.schedule.hour", "2"));
     }
-
-    // ── Сессия ────────────────────────────────────────────────────────────
 
     public int getSessionTimeoutMinutes() {
         return Integer.parseInt(props.getProperty("session.timeout.minutes", "60"));

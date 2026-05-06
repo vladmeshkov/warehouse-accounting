@@ -10,6 +10,10 @@
     <HBox styleClass="toolbar" spacing="10" alignment="CENTER_LEFT">
         <Label text="Тип:"/>
         <ComboBox fx:id="typeFilter" prefWidth="180" onAction="#applyFilter"/>
+        <Button text="🔍 Детали" onAction="#showDetails"
+                style="-fx-background-color:#8e44ad;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 14 6 14;"/>
+        <Button fx:id="exportBtn" text="📥 Excel" onAction="#handleExport"
+                style="-fx-background-color:#217346;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 14 6 14;"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button text="Обновить" onAction="#loadData"
                 style="-fx-background-color:#2980b9;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 12 6 12;"/>

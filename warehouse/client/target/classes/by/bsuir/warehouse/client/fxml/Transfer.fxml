@@ -26,10 +26,11 @@
     </HBox>
     <TableView fx:id="itemsTable" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn fx:id="colArticle" text="Артикул"      prefWidth="110"/>
-            <TableColumn fx:id="colProduct" text="Наименование" prefWidth="320"/>
-            <TableColumn fx:id="colUnit"    text="Ед.изм."      prefWidth="80"/>
-            <TableColumn fx:id="colQty"     text="Количество"   prefWidth="120"/>
+            <TableColumn fx:id="colArticle"  text="Артикул"      prefWidth="110"/>
+            <TableColumn fx:id="colProduct"  text="Наименование" prefWidth="320"/>
+            <TableColumn fx:id="colUnit"     text="Ед.изм."      prefWidth="80"/>
+            <TableColumn fx:id="colStock"    text="Остаток"      prefWidth="80"/>
+            <TableColumn fx:id="colQty"      text="Количество"   prefWidth="120"/>
         </columns>
         <placeholder><Label text="Нет позиций"/></placeholder>
     </TableView>

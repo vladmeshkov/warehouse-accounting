@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="by.bsuir.warehouse.client.controller.AnalyticsController"
+      spacing="12" style="-fx-background-color: #f4f6fb;">
+    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+    <Label text="📊 Аналитика" styleClass="section-title"/>
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+        <VBox fx:id="chartContainer" spacing="20" alignment="CENTER"/>
+    </ScrollPane>
+    <Label fx:id="statusLabel" text="" style="-fx-text-fill:#7f8c8d;"/>
+</VBox>

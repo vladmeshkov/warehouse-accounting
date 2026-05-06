@@ -29,13 +29,15 @@
     </HBox>
     <TableView fx:id="itemsTable" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn fx:id="colArticle" text="Артикул"      prefWidth="110"/>
-            <TableColumn fx:id="colProduct" text="Наименование" prefWidth="280"/>
-            <TableColumn fx:id="colUnit"    text="Ед.изм."      prefWidth="80"/>
-            <TableColumn fx:id="colQty"     text="Количество"   prefWidth="110"/>
-            <TableColumn fx:id="colPrice"   text="Цена"         prefWidth="110"/>
-            <TableColumn fx:id="colTotal"   text="Сумма"        prefWidth="120"/>
+            <TableColumn fx:id="colArticle"  text="Артикул"      prefWidth="100"/>
+            <TableColumn fx:id="colProduct"  text="Наименование" prefWidth="220"/>
+            <TableColumn fx:id="colUnit"     text="Ед.изм."      prefWidth="70"/>
+            <TableColumn fx:id="colStock"    text="Остаток"      prefWidth="75"/>
+            <TableColumn fx:id="colQty"      text="Количество"   prefWidth="100"/>
+            <TableColumn fx:id="colPrice"    text="Цена"         prefWidth="100"/>
+            <TableColumn fx:id="colTotal"    text="Сумма"        prefWidth="110"/>
         </columns>
+        <placeholder><Label text="Добавьте позиции с помощью кнопки «Добавить позицию»"/></placeholder>
     </TableView>
     <HBox alignment="CENTER_RIGHT" spacing="20">
         <Label fx:id="totalLabel" text="Итого: 0.00 руб."

@@ -8,11 +8,11 @@
     <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
     <Label text="🏭 Склады" styleClass="section-title"/>
     <HBox styleClass="toolbar" spacing="8" alignment="CENTER_LEFT">
-        <Button text="＋ Добавить" onAction="#handleAdd"
+        <Button fx:id="addBtn" text="＋ Добавить" onAction="#handleAdd"
                 style="-fx-background-color:#27ae60;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 14 6 14;"/>
-        <Button text="✏ Изменить" onAction="#handleEdit"
+        <Button fx:id="editBtn" text="✏ Изменить" onAction="#handleEdit"
                 style="-fx-background-color:#f39c12;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 14 6 14;"/>
-        <Button text="🗑 Удалить" onAction="#handleDelete"
+        <Button fx:id="deleteBtn" text="🗑 Удалить" onAction="#handleDelete"
                 style="-fx-background-color:#e74c3c;-fx-text-fill:white;-fx-background-radius:4;-fx-cursor:hand;-fx-padding:6 14 6 14;"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button text="Обновить" onAction="#loadData"
